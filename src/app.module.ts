@@ -1,25 +1,30 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BlockchainEntity } from './blockchain/blockchain.entity';
 import { ScheduleModule } from '@nestjs/schedule';
-
+import configuration from 'config/configuration';
+import * as path from 'path'
+import { BlockchainEntity } from './blockchain/blockchain.entity';
 
 @Module({
   imports: [
-            ConfigModule.forRoot({envFilePath: './.development.env'}),
-            TypeOrmModule.forRoot({
-              type: "postgres",
-              host: process.env.host,
-              port: Number(process.env.dbport),
-              username: process.env.dbusername,
-              password: process.env.dbpassword,
-              database: process.env.database,
-              entities: [BlockchainEntity],
-              synchronize: true
+          //  ConfigModule.forRoot({ load: [configuration] }),
+            TypeOrmModule.forRootAsync({
+              imports: [ConfigModule],
+              useFactory: (configService: ConfigService) => ({
+                type: 'postgres',
+                host: configService.get('host', 'localhost'),
+                port: configService.get<number>('port', 5432),
+                username: configService.get('username', 'postgres'),
+                password: configService.get('password', 'postgres'),
+                database: configService.get('database', 'test'),
+                entities: [BlockchainEntity],
+                synchronize: configService.get('synchronize'),
+              }),
+              inject: [ConfigService],
             }),
             ScheduleModule.forRoot(),
             BlockchainModule
@@ -29,3 +34,4 @@ import { ScheduleModule } from '@nestjs/schedule';
   providers: [AppService],
 })
 export class AppModule {}
+
