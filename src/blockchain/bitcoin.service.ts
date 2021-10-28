@@ -4,6 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from "typeorm";
 import { BlockchainDto } from "./dto/blockchain.dto";
 import { TasksService } from "./tasks.service";
+import { SchedulerRegistry } from "@nestjs/schedule";
+import { CronJob } from "cron";
+import { getConnection } from "typeorm";
 
 const axios = require("axios")
 const sochain_network = "BTCTEST"
@@ -12,7 +15,8 @@ export class BitcoinService {
 
   constructor(@InjectRepository(BlockchainEntity)
               private blockchainRepository: Repository<BlockchainEntity>,
-              private tasksService: TasksService
+              private tasksService: TasksService,
+              private schedulerRegistry: SchedulerRegistry
               ) {}
 
   sayHello() {
@@ -33,13 +37,14 @@ export class BitcoinService {
           const sochain_network = "BTCTEST"
           const privateKey = "92mmY2TTydkHmGpcAWCmqEZjMwxN23TxHgq9HVzSrXxNa17zTWF"
           const sourceAddress = "n3bduR9Y27yZsfCMFyPJokVhe9KPdd6bEu"
-          const transactionAbout = {
+          let transactionAbout = {
             txHash: "",
-            status: "",
+            status: "new",
             result: {},
             typeCoin: "btc",
             date: new Date()
           }
+        
 
         let amountToSend = 0;
         let mass = [];
@@ -139,15 +144,14 @@ export class BitcoinService {
         };
         //Form new transactionAbout object
         transactionAbout.date = new Date()
-        transactionAbout.status = "new"
         transactionAbout.result = responseData
         transactionAbout.txHash = result.data.data.txid
         
         //Make DB log
-        this.create(transactionAbout)
+        const dbId = this.create(transactionAbout)
         
         //Start new cron-job
-        this.tasksService.addCronJob(transactionAbout.txHash, "30")
+        this.addCronJob(String(dbId), "5")
 
         return responseData;
       };
@@ -156,20 +160,60 @@ export class BitcoinService {
         return this.blockchainRepository.findOne(id);
       }
 
-      create(blockchainDto: BlockchainDto): Promise<BlockchainEntity> {
+      async create(blockchainDto: BlockchainDto): Promise<number> {
         const blockchainEntity = new BlockchainEntity();
         blockchainEntity.txHash = blockchainDto.txHash;
         blockchainEntity.status = blockchainDto.status;
         blockchainEntity.result = blockchainDto.result;
         blockchainEntity.typeCoin = blockchainDto.typeCoin;
         blockchainEntity.date = blockchainDto.date;
-    
-        return this.blockchainRepository.save(blockchainEntity);
+        const note = await this.blockchainRepository.save(blockchainEntity)
+        return note.id;
       }
 
       async findAll(): Promise<BlockchainEntity[]> {
         return this.blockchainRepository.find();
       }
+
+      addCronJob(idTx: string, seconds: string) {
+        const job = new CronJob(`${seconds} * * * * *`, async() => {
+          const entity = await getConnection()
+          .createQueryBuilder()
+          .select("blockchain_entity.txHash")
+          .from(BlockchainEntity, "blockchain_entity")
+          .where("blockchain_entity.id = :id", { id: idTx })
+          .getOne();
+            let confirms = await axios.get(`https://sochain.com/api/v2/tx/${sochain_network}/${entity.txHash}`).then(function(res)  { return res.data.data.confirmations })
+            
+            if ((confirms === "1") || (confirms === "2")) {
+              await getConnection()
+              .createQueryBuilder()
+              .update("blockchain_entity")
+              .set({ status: "submitted" })
+              .where("id = :id", { id: idTx })
+              .execute();
+            //submitted
+            }
+            if (Number(confirms) >= 3) {
+                //confirmed
+                await getConnection()
+                .createQueryBuilder()
+                .update("blockchain_entity")
+                .set({ status: "confirmed" })
+                .where("id = :id", { id: idTx })
+                .execute();
+                this.deleteCron(idTx)
+            }
+        });
+      
+        this.schedulerRegistry.addCronJob(idTx, job);
+        job.start();
+      }
+    
+    
+    deleteCron(name: string) {
+    this.schedulerRegistry.deleteCronJob(name);
+    }
 
 }
 
