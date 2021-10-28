@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import {BlockchainEntity} from "./blockchain.entity";
-import {Repository} from "typeorm";
+import {BlockchainEntity} from "../../bd/src/entity/BlockchainEntity";
+import {getConnection, Repository} from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm"
+import {TasksEthService} from "./tasksEth.service";
 var Web3 = require('web3')
 const web3 = new Web3("https://ropsten.infura.io/v3/672b38a3e2d746f5bd5f24396cb048e9");
-const w3 = new Web3('wss://ropsten.infura.io/ws/v3/672b38a3e2d746f5bd5f24396cb048e9')
 
 @Injectable()
-export class EtheriumService {
+export class EthereumService {
   constructor(
     @InjectRepository(BlockchainEntity)
     private blockchainRepository: Repository<BlockchainEntity>,
+    private tasksService: TasksEthService
   ) {}
 
   async sendTx(send: object): Promise<any> {
@@ -20,39 +21,34 @@ export class EtheriumService {
         console.log(`${send[i].to} is wrong address!`)
       }
       else{
-        await this.updateBd('Null','new', send[i])
-        this.sendTrans(send[i])
+        let idRecord=await this.updateBd('Null','new', send[i])
+        await this.sendTrans(send[i], idRecord.id)
       }
     }
   }
 
-  async sendTrans(send) {
+  async sendTrans(send, idRecord) {
     const addrSender = '0x7cE1A7273Dc87f08fE85c9652A1f5bCD1Ed66D3B';
     let valueCoins=parseInt(send.value)
     const rawTx = {
       gasPrice: 1600000015,
-      gasLimit: 21000,
+      gasLimit: 1000000,
       to: send.to,
       from: addrSender,
       value: valueCoins,
       chainId: 3
     }
-    let confirm
+
     let signedTx=await web3.eth.accounts.signTransaction(rawTx, '0xdb9dfc6391e28d274cfd465074e388705be20db4fbf2fc2f4808c8c9e69e58c8')
-    await web3.eth.sendSignedTransaction(signedTx.rawTransaction).on('confirmation',
-      async function(confirmationNumber, receipt){
-        console.log(confirmationNumber)
-        // this.this.updateBd(receipt.transactionHash,'submitted', send)
-        await EtheriumService.prototype.updateBd(receipt.transactionHash,'submitted', send)
-        if (confirmationNumber == 3){
-          console.log('Success')
-          // this.this.updateBd(receipt.transactionHash,'confirmed', send)
-          return 'Success'
-        }
-        else{
-          return 'Error'
-        }
-    })
+    let result=await web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+    let today=new Date()
+    await getConnection()
+      .createQueryBuilder()
+      .update(BlockchainEntity)
+      .set({ status:'submitted', txHash:result.transactionHash, result:send, date:String(today)})
+      .where("id = :id", { id: idRecord})
+      .execute();
+    this.tasksService.addCronJob(result.transactionHash, idRecord)
   }
 
 
@@ -79,9 +75,9 @@ export class EtheriumService {
   }
 
   updateBd(txHash, status, result){
-    //const today = new Date()
+    const today = new Date()
     let blockchainEntity=new BlockchainEntity()
-    blockchainEntity.date=new Date()
+    blockchainEntity.date=String(today)
     blockchainEntity.status=status
     blockchainEntity.typeCoin='eth'
     blockchainEntity.result=result
