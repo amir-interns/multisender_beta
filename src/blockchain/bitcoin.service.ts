@@ -19,9 +19,7 @@ export class BitcoinService {
               private schedulerRegistry: SchedulerRegistry
               ) {}
 
-  sayHello() {
-    return 'btc'
-  }
+  
 
    checkTx(txHash: string): Promise<object> {
     return axios.get(`https://sochain.com/api/v2/tx/${sochain_network}/${txHash}`).then(function(res)  { return res.data })
