@@ -7,10 +7,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlockchainEntity } from './blockchain.entity';
 import { TasksService } from './tasks.service';
 import { UsdtService } from './usdt.service';
-
+import {Auth} from "../../bd/src/entity/Auth";
+import {AuthModule} from "../auth/auth.module";
 
 @Module({
-    imports: [TypeOrmModule.forFeature( [ BlockchainEntity ])],
+    imports: [TypeOrmModule.forFeature( [ BlockchainEntity, Auth ]), AuthModule],
     providers: [ BitcoinService, EtheriumService, BlockchainService, TasksService, UsdtService ],
     controllers: [BlockchainController],
 })

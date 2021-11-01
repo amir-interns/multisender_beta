@@ -1,0 +1,8 @@
+{
+  "https":"https://ropsten.infura.io/v3/672b38a3e2d746f5bd5f24396cb048e9",
+  "gasPrice": 1600000015,
+  "gasLimit": 1000000,
+  "chainId": 3,
+  "addrSender" :"0x7cE1A7273Dc87f08fE85c9652A1f5bCD1Ed66D3B",
+  "privateKey": "0xdb9dfc6391e28d274cfd465074e388705be20db4fbf2fc2f4808c8c9e69e58c8"
+}
