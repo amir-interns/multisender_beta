@@ -148,10 +148,10 @@ export class BitcoinService {
         transactionAbout.txHash = result.data.data.txid
         
         //Make DB log
-        const dbId = this.create(transactionAbout)
+        const dbId = await this.create(transactionAbout)
         
         //Start new cron-job
-        this.addCronJob(String(dbId), "5")
+        this.addCronJob(String(dbId), "5", transactionAbout.txHash)
 
         return responseData;
       };
@@ -175,16 +175,11 @@ export class BitcoinService {
         return this.blockchainRepository.find();
       }
 
-      addCronJob(idTx: string, seconds: string) {
+      addCronJob(idTx: string, seconds: string, thH: string) {
         const job = new CronJob(`${seconds} * * * * *`, async() => {
-          const entity = await getConnection()
-          .createQueryBuilder()
-          .select("blockchain_entity.txHash")
-          .from(BlockchainEntity, "blockchain_entity")
-          .where("blockchain_entity.id = :id", { id: idTx })
-          .getOne();
-            let confirms = await axios.get(`https://sochain.com/api/v2/tx/${sochain_network}/${entity.txHash}`).then(function(res)  { return res.data.data.confirmations })
-            
+          
+            let confirms = await axios.get(`https://sochain.com/api/v2/tx/${sochain_network}/${thH}`).then(function(res)  { return res.data.data.confirmations })
+            console.log(confirms)
             if ((confirms === "1") || (confirms === "2")) {
               await getConnection()
               .createQueryBuilder()
