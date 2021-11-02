@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import {BlockchainEntity} from "../../bd/src/entity/BlockchainEntity";
+import {BlockchainEntity} from "../../bd/src/entity/blockchain.entity";
 import {getConnection, Repository} from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm"
 import {TasksEthService} from "./tasksEth.service";
 let Web3 = require('web3')
-const conf=require('../../configServices/EtherConfig.json')
+const conf=require('./configServices/EtherConfig.json')
 const addrSender = conf.addrSender
 const bl = new Repository()
 
@@ -56,32 +56,16 @@ export class EthereumService {
   }
 
 
-  getBalance(send) {
+  async getBalance(address) {
     const web3 =new  Web3 (conf.https)
-    let valueCoins=parseFloat(send.value)
-    const rawTx = {
-      gasPrice: conf.gasPrice,
-      gasLimit: conf.gasLimit,
-      to: send.to,
-      from: addrSender,
-      value: valueCoins,
-      chainId: conf.chainId
-    }
-    var bal = web3.eth.getBalance(addrSender).then((value) => {
-      value = parseInt(value)
-      if (value >= rawTx.gasPrice * rawTx.gasLimit + rawTx.value) {
-        return 'Enough money!'
-      }
-      else {
-        return "Not enough money"
-      }
-    })
+    var bal = await web3.eth.getBalance(address)
+    return bal
   }
 
   updateBd(txHash, status, result){
     const today = new Date()
     let blockchainEntity=new BlockchainEntity()
-    blockchainEntity.date=String(today)
+    blockchainEntity.date=today
     blockchainEntity.status=status
     blockchainEntity.typeCoin='eth'
     blockchainEntity.result=result
