@@ -2,12 +2,12 @@
 import { Injectable } from "@nestjs/common";
 import { CronJob } from "cron";
 import { SchedulerRegistry } from "@nestjs/schedule";
-import { BlockchainEntity } from "../../bd/src/entity/BlockchainEntity";
+import { BlockchainEntity } from "../../bd/src/entity/blockchain.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import {getConnection} from "typeorm";
 const Web3 = require('web3')
-const conf = require('../../configServices/UsdtConfig.json')
+const conf = require('./configServices/UsdtConfig.json')
 
 @Injectable()
 export class TasksUsdtService {

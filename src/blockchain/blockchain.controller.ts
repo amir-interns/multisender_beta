@@ -1,37 +1,35 @@
-import { Controller, Get, Param, Body, forwardRef, Inject, Post,UseGuards } from '@nestjs/common'
+import {Controller, Req, Get, Param, Body, forwardRef, Inject, Post, UseGuards, Query} from '@nestjs/common'
 import { BitcoinService } from './bitcoin.service'
-import { BlockchainService } from './blockchain.service'
-import { EthereumService } from './EthereumService'
+import {Request } from 'express'
+import { EthereumService } from './ethereum.service'
 import {UsdtService} from './usdt.service'
 import {AuthService} from "../auth/auth.service";
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
 import { AuthGuard } from '@nestjs/passport';
 
 interface IBlockchainService {
-    sendTx(body: object): object
+    sendTx(body: object): object;
+    getBalance(address: string): object;
 }
+
+
 
 @Controller('blockchain')
 export class BlockchainController {
     constructor(private bitcoinService: BitcoinService,
                 private etheriumService: EthereumService,
-                private blockChainService: BlockchainService,
-                private usdtService: UsdtService,
-                private authService:AuthService)
+                private usdtService: UsdtService)
                  {}
 
 
-    @UseGuards(AuthGuard('local'))
-    @Post('auth')
-    async login(@Body() req) {
-      return this.authService.login(req)
+    @UseGuards(JwtAuthGuard)
+    @Post('balance/:type/:address')
+    async getBlockchainBalance(@Param('type') type, @Param('address') address): Promise<any> {
+       const service: IBlockchainService = type === 'eth' ? this.etheriumService : (type === 'btc' ? this.bitcoinService : this.usdtService)
+       return await service.getBalance(address)
     }
 
-    @Post('balance/:type/:address')
-    async getBlockchainBalance(@Param() params: any): Promise<object> {
-       const service: IBlockchainService = params.type === 'eth' ? this.etheriumService : this.bitcoinService
-       return service.getBalance(params.address)
-    }
+
 
 
     @UseGuards(JwtAuthGuard)
