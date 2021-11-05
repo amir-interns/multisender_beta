@@ -11,9 +11,9 @@ import {Auth} from "../bd/src/entity/Auth";
 import {AuthModule} from "./auth/auth.module";
 
 @Module({
-  imports: [
+  imports: [ConfigModule.forRoot({ load: [database], envFilePath: '.development.env' }),
             TypeOrmModule.forRootAsync({
-              imports: [ConfigModule.forRoot({ load: [database], envFilePath: '.development.env' })],
+              imports: [ConfigModule],
               useFactory: (configService: ConfigService) => ({
                 type: 'postgres',
                 host: configService.get<string>('database.host'),
