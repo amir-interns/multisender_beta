@@ -22,7 +22,7 @@ export class BlockchainController {
                  {}
 
 
-    @UseGuards(JwtAuthGuard)
+    //@UseGuards(JwtAuthGuard)
     @Post('balance/:type/:address')
     async getBlockchainBalance(@Param('type') type, @Param('address') address): Promise<any> {
        const service: IBlockchainService = type === 'eth' ? this.etheriumService : (type === 'btc' ? this.bitcoinService : this.usdtService)
@@ -32,7 +32,7 @@ export class BlockchainController {
 
 
 
-    @UseGuards(JwtAuthGuard)
+    //@UseGuards(JwtAuthGuard)
     @Post('sendTx')
     async sendBlockchainTx(@Body() params: any): Promise<object>{
         const service: IBlockchainService = params.type === 'eth' ? this.etheriumService : (params.type === 'btc' ? this.bitcoinService : this.usdtService)

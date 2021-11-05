@@ -10,9 +10,11 @@ import {Auth} from "../../bd/src/entity/Auth";
 import {AuthModule} from "../auth/auth.module";
 import {TasksEthService} from "./tasksEth.service";
 import {TasksUsdtService} from "./taskUsdtService";
+import { ConfigModule } from '@nestjs/config';
+import BitcoinConfig from 'config/bitcoin'
 
 @Module({
-    imports: [TypeOrmModule.forFeature( [ BlockchainEntity, Auth ]), AuthModule],
+    imports: [TypeOrmModule.forFeature( [ BlockchainEntity, Auth ]), AuthModule, ConfigModule.forFeature(BitcoinConfig)],
     providers: [ BitcoinService, EthereumService, TasksService, UsdtService, TasksEthService, TasksUsdtService ],
     controllers: [BlockchainController],
 })
