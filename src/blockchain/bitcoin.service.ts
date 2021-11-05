@@ -7,32 +7,40 @@ import { TasksService } from "./tasks.service";
 import { SchedulerRegistry } from "@nestjs/schedule";
 import { CronJob } from "cron";
 import { getConnection } from "typeorm";
+import  BitcoinConfig  from 'config/bitcoin'
+import { ConfigService } from "@nestjs/config";
 const axios = require("axios")
 const bitcore = require("bitcore-lib")
-const sochain_network = "BTCTEST"
-const privateKey = "92mmY2TTydkHmGpcAWCmqEZjMwxN23TxHgq9HVzSrXxNa17zTWF"
-const sourceAddress = "n3bduR9Y27yZsfCMFyPJokVhe9KPdd6bEu"
+
 
 
 @Injectable()
 export class BitcoinService {
 
+  public sochain_network
+  public privateKey
+  public sourceAddress  
+
   constructor(@InjectRepository(BlockchainEntity)
               private blockchainRepository: Repository<BlockchainEntity>,
-              private tasksService: TasksService,
-              private schedulerRegistry: SchedulerRegistry
-              ) {}
+              private schedulerRegistry: SchedulerRegistry,
+              private configService: ConfigService
+              ) {
+                this.sochain_network = configService.get<string>('sochain_network')
+                this.privateKey = configService.get<string>('privateKey')
+                this.sourceAddress = configService.get<string>('sourceAddress')
+              }
 
   sayHello() {
     return 'btc'
   }
 
    checkTx(txHash: string): Promise<object> {
-    return axios.get(`https://sochain.com/api/v2/tx/${sochain_network}/${txHash}`).then(function(res)  { return res.data })
+    return axios.get(`https://sochain.com/api/v2/tx/${this.sochain_network}/${txHash}`).then(function(res)  { return res.data })
   }
 
     getBalance(address: string): Promise<object> {
-        return axios.get(`https://sochain.com/api/v2/get_address_balance/${sochain_network}/${address}`).then(function(res)  { return res.data.data.confirmed_balance })
+        return axios.get(`https://sochain.com/api/v2/get_address_balance/${this.sochain_network}/${address}`).then(function(res)  { return res.data.data.confirmed_balance })
     }
 
         async sendTx(body) { 
@@ -62,7 +70,7 @@ export class BitcoinService {
           throw new Error("Too much transactions. Max 50.");
         }
         const utxos = await axios.get(
-            `https://sochain.com/api/v2/get_tx_unspent/${sochain_network}/${sourceAddress}`
+            `https://sochain.com/api/v2/get_tx_unspent/${this.sochain_network}/${this.sourceAddress}`
         );
         const transaction = new bitcore.Transaction();
 
@@ -112,20 +120,20 @@ export class BitcoinService {
       
       
         // Set change address - Address to receive the left over funds after transfer
-        transaction.change(sourceAddress);
+        transaction.change(this.sourceAddress);
       
         //manually set transaction fees: 20 satoshis per byte
         transaction.fee(fee * 10);
       
         // Sign transaction with your private key
-        transaction.sign(privateKey);
+        transaction.sign(this.privateKey);
       
         // serialize Transactions
         const serializedTX = transaction.serialize();
         // Send transaction
         const result = await axios({
           method: "POST",
-          url: `https://sochain.com/api/v2/send_tx/${sochain_network}`,
+          url: `https://sochain.com/api/v2/send_tx/${this.sochain_network}`,
           data: {
             tx_hex: serializedTX,
           },
@@ -177,7 +185,7 @@ export class BitcoinService {
       addCronJob(idTx: string, seconds: string, thH: string) {
         const job = new CronJob(`${seconds} * * * * *`, async() => {
           
-            let confirms = await axios.get(`https://sochain.com/api/v2/tx/${sochain_network}/${thH}`).then(function(res)  { return res.data.data.confirmations })
+            let confirms = await axios.get(`https://sochain.com/api/v2/tx/${this.sochain_network}/${thH}`).then(function(res)  { return res.data.data.confirmations })
             if ((confirms === "1") || (confirms === "2")) {
               await getConnection()
               .createQueryBuilder()
