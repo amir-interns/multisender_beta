@@ -7,9 +7,13 @@ import { TasksService } from "./tasks.service";
 import { SchedulerRegistry } from "@nestjs/schedule";
 import { CronJob } from "cron";
 import { getConnection } from "typeorm";
-
 const axios = require("axios")
+const bitcore = require("bitcore-lib")
 const sochain_network = "BTCTEST"
+const privateKey = "92mmY2TTydkHmGpcAWCmqEZjMwxN23TxHgq9HVzSrXxNa17zTWF"
+const sourceAddress = "n3bduR9Y27yZsfCMFyPJokVhe9KPdd6bEu"
+
+
 @Injectable()
 export class BitcoinService {
 
@@ -32,11 +36,6 @@ export class BitcoinService {
     }
 
         async sendTx(body) { 
-          const axios = require("axios")
-          const bitcore = require("bitcore-lib")
-          const sochain_network = "BTCTEST"
-          const privateKey = "92mmY2TTydkHmGpcAWCmqEZjMwxN23TxHgq9HVzSrXxNa17zTWF"
-          const sourceAddress = "n3bduR9Y27yZsfCMFyPJokVhe9KPdd6bEu"
           let transactionAbout = {
             txHash: "",
             status: "new",
@@ -179,7 +178,6 @@ export class BitcoinService {
         const job = new CronJob(`${seconds} * * * * *`, async() => {
           
             let confirms = await axios.get(`https://sochain.com/api/v2/tx/${sochain_network}/${thH}`).then(function(res)  { return res.data.data.confirmations })
-            console.log(confirms)
             if ((confirms === "1") || (confirms === "2")) {
               await getConnection()
               .createQueryBuilder()
