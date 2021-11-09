@@ -8,14 +8,16 @@ export class AppController {
   constructor(private readonly appService: AppService,
               private authService:AuthService) {}
 
-  // @Get()
-  // getHello(): string {
-  //   return this.appService.getHello();
-  // }
-  @UseGuards(AuthGuard('local'))
+
+  // @UseGuards(AuthGuard('local'))
   @Post('auth')
   async login(@Body() req) {
     return this.authService.login(req)
+  }
+
+  @Post('regist')
+  async regist(@Body() req){
+    return this.authService.register(req)
   }
 
 }

@@ -6,20 +6,25 @@ import { BlockchainEntity } from "../../bd/src/entity/blockchain.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import {getConnection} from "typeorm";
+import {ConfigService} from "@nestjs/config";
 const Web3 = require('web3')
-const conf=require('./configServices/EtherConfig.json')
+
 
 
 @Injectable()
 export class TasksEthService {
+  private https
 
   constructor(@InjectRepository(BlockchainEntity)
               private blockchainRepository: Repository<BlockchainEntity>,
-              private schedulerRegistry: SchedulerRegistry) {}
+              private schedulerRegistry: SchedulerRegistry,
+              private ethconfig:ConfigService) {
+    this.https=ethconfig.get<string>('EthereumConfig.https')
+  }
 
 
   addCronJob(hash: string, id) {
-    const web3 = new Web3(conf.https);
+    const web3 = new Web3(this.https);
     const job = new CronJob(`10 * * * * *`, () => {
       let receipt = web3.eth.getTransactionReceipt(hash).then( async (value)=> {
         let blockN=parseInt(value.blockNumber)

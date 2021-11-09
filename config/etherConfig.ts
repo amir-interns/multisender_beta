@@ -5,9 +5,11 @@ export default registerAs('EthereumConfig', () => ({
   gasPrice: parseInt(process.env.gasPrice) || 1600000015,
   gasLimit: parseInt(process.env.gasLimit) || 1000000,
   chainId: parseInt(process.env.chainId) || 3,
-  privateKey: String(process.env.privateKey),
+  privateKey: String(process.env.EthprivateKey),
   addrSender: String(process.env.addrSender),
 }));
+
+
 
 
 
