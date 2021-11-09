@@ -3,9 +3,8 @@ import { BitcoinService } from './bitcoin.service'
 import {Request } from 'express'
 import { EthereumService } from './ethereum.service'
 import {UsdtService} from './usdt.service'
-import {AuthService} from "../auth/auth.service";
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
-import { AuthGuard } from '@nestjs/passport';
+
 
 interface IBlockchainService {
     sendTx(body: object): object;

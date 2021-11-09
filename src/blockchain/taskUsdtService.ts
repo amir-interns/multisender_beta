@@ -13,26 +13,26 @@ const Web3 = require('web3')
 @Injectable()
 export class TasksUsdtService {
   private ws
+  private web3
   constructor(@InjectRepository(BlockchainEntity)
               private blockchainRepository: Repository<BlockchainEntity>,
               private schedulerRegistry: SchedulerRegistry,
               private tokenConfig:ConfigService) {
     this.ws=tokenConfig.get<string>('TokenConfig.tokenWebSocketInfura')
+    this.web3=new Web3(this.ws)
   }
 
 
   addCronJob(hash: string, id) {
-
-    const web3 = new Web3(this.ws)
     const job = new CronJob(`10 * * * * *`, () => {
-      let receipt = web3.eth.getTransactionReceipt(hash).then( async (value)=> {
+      let receipt = this.web3.eth.getTransactionReceipt(hash).then( async (value)=> {
         let blockN=parseInt(value.blockNumber)
         if (blockN >= 3) {
           let today=new Date()
           await getConnection()
             .createQueryBuilder()
             .update(BlockchainEntity)
-            .set({ status:'confirmed', date:String(today)})
+            .set({ status:'confirmed', date:today})
             .where({id})
             .execute();
           this.deleteCron(hash)

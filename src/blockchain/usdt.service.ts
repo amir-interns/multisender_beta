@@ -17,6 +17,7 @@ export class UsdtService {
   private privateKey
   private addrSender
   private addrContract
+  private web3
   constructor(
     @InjectRepository(BlockchainEntity)
     private blockchainRepository: Repository<BlockchainEntity>,
@@ -28,6 +29,7 @@ export class UsdtService {
     this.privateKey=tokenConfig.get<string>('TokenConfig.tokenPrivateKey')
     this.addrSender=tokenConfig.get<string>('TokenConfig.tokenAddrSender')
     this.addrContract=tokenConfig.get<string>('TokenConfig.tokenAddrContract')
+    this.web3=new Web3(this.webSocketInfura)
   }
 
   async getBalance(){
@@ -38,7 +40,7 @@ export class UsdtService {
   }
 
   async sendTx(send:object){
-    const web3 = new Web3(this.webSocketInfura)
+
     let contract =  new Contract(abi, this.addrContract)
     for (let i = 0; i < Object.keys(send).length; i++) {
       let Record = await this.updateBd('Null', 'new', send[i])
@@ -49,13 +51,13 @@ export class UsdtService {
         data: await contract.methods.transfer(send[i].to, send[i].value).encodeABI()
       };
 
-      let signedTx = await web3.eth.accounts.signTransaction(tx, this.privateKey)
-      let result = await web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+      let signedTx = await this.web3.eth.accounts.signTransaction(tx, this.privateKey)
+      let result = await this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
       let today=new Date()
       await getConnection()
         .createQueryBuilder()
         .update(BlockchainEntity)
-        .set({ status:'submitted', txHash:result.transactionHash, result:send[i], date:String(today)})
+        .set({ status:'submitted', txHash:result.transactionHash, result:send[i], date:today})
         .where({id:Record.id})
         .execute();
       this.taskService.addCronJob(result.transactionHash, Record.id)

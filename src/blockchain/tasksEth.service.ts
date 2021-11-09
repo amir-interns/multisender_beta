@@ -14,26 +14,27 @@ const Web3 = require('web3')
 @Injectable()
 export class TasksEthService {
   private https
+  private web3
 
   constructor(@InjectRepository(BlockchainEntity)
               private blockchainRepository: Repository<BlockchainEntity>,
               private schedulerRegistry: SchedulerRegistry,
               private ethconfig:ConfigService) {
     this.https=ethconfig.get<string>('EthereumConfig.https')
+    this.web3=new Web3(this.https);
   }
 
 
   addCronJob(hash: string, id) {
-    const web3 = new Web3(this.https);
     const job = new CronJob(`10 * * * * *`, () => {
-      let receipt = web3.eth.getTransactionReceipt(hash).then( async (value)=> {
+      let receipt = this.web3.eth.getTransactionReceipt(hash).then( async (value)=> {
         let blockN=parseInt(value.blockNumber)
         if (blockN >= 3) {
           let today=new Date()
           await getConnection()
             .createQueryBuilder()
             .update(BlockchainEntity)
-            .set({ status:'confirmed', date:String(today)})
+            .set({ status:'confirmed', date:today})
             .where({id})
             .execute();
           this.deleteCron(hash)
