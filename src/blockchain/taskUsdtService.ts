@@ -8,19 +8,16 @@ import { InjectRepository } from "@nestjs/typeorm";
 import {getConnection} from "typeorm";
 import {ConfigService} from "@nestjs/config";
 const Web3 = require('web3')
-// const conf = require('./configServices/UsdtConfig.json')
+
 
 @Injectable()
 export class TasksUsdtService {
   private ws
-  private https
-
   constructor(@InjectRepository(BlockchainEntity)
               private blockchainRepository: Repository<BlockchainEntity>,
               private schedulerRegistry: SchedulerRegistry,
               private tokenConfig:ConfigService) {
     this.ws=tokenConfig.get<string>('TokenConfig.tokenWebSocketInfura')
-    this.https=tokenConfig.get<string>('TokenConfig.tokenHttps')
   }
 
 
