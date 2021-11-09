@@ -7,14 +7,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import  database  from 'config/database'
 import BitcoinConfig from 'config/bitcoin'
+
 import EthereumConfig from 'config/etherConfig'
 import TokenConfig from 'config/etherConfig'
-import { BlockchainEntity } from '../bd/src/entity/blockchain.entity';
-import {Auth} from "../bd/src/entity/Auth";
-import {AuthModule} from "./auth/auth.module";
+
 
 @Module({
   imports: [ConfigModule.forRoot({ load: [database, BitcoinConfig, EthereumConfig, TokenConfig], envFilePath: '.development.env' }),
+
             TypeOrmModule.forRootAsync({
               imports: [ConfigModule],
               useFactory: (configService: ConfigService) => ({
