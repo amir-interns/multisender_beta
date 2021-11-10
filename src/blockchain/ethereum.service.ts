@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {BlockchainEntity} from "../../bd/src/entity/blockchain.entity";
 import {getConnection, Repository} from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm"
-import {TasksEthService} from "./tasksEth.service";
+import {TasksEthService} from "./tasks/tasksEth.service";
 let Web3 = require('web3')
 import {ConfigService} from "@nestjs/config";
 
@@ -64,7 +64,7 @@ export class EthereumService {
       .set({ status:'submitted', txHash:result.transactionHash, result:send, date:today})
       .where({id})
       .execute();
-    this.tasksService.addCronJob(result.transactionHash, id)
+    this.tasksService.addCronJob(result.transactionHash, id, this.web3)
   }
 
 

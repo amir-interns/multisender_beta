@@ -1,7 +1,7 @@
 import { Injectable, UploadedFile} from '@nestjs/common';
 import {getConnection, Repository} from "typeorm";
 import {BlockchainEntity} from "../../bd/src/entity/blockchain.entity";
-import {TasksUsdtService} from "./taskUsdtService";
+import {TasksEthService} from "./tasks/tasksEth.service";
 import {InjectRepository} from "@nestjs/typeorm";
 import {ConfigService} from "@nestjs/config";
 const Contract = require('web3-eth-contract');
@@ -21,7 +21,7 @@ export class UsdtService {
   constructor(
     @InjectRepository(BlockchainEntity)
     private blockchainRepository: Repository<BlockchainEntity>,
-    private taskService:TasksUsdtService,
+    private taskService:TasksEthService,
     private tokenConfig:ConfigService)
   {
     this.webSocketInfura=tokenConfig.get<string>('TokenConfig.tokenWebSocketInfura')
@@ -60,7 +60,7 @@ export class UsdtService {
         .set({ status:'submitted', txHash:result.transactionHash, result:send[i], date:today})
         .where({id:Record.id})
         .execute();
-      this.taskService.addCronJob(result.transactionHash, Record.id)
+      this.taskService.addCronJob(result.transactionHash, Record.id, this.web3)
     }
   }
 

@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { Cron } from '@nestjs/schedule';
 import { CronJob } from "cron";
 import { SchedulerRegistry } from "@nestjs/schedule";
-import { BlockchainEntity } from "./blockchain.entity";
+import { BlockchainEntity } from "../../../bd/src/entity/blockchain.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 const axios = require("axios")
