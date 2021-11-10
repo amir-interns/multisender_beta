@@ -5,6 +5,8 @@ import { InjectRepository } from "@nestjs/typeorm"
 import {TasksEthService} from "./tasks/tasksEth.service";
 let Web3 = require('web3')
 import {ConfigService} from "@nestjs/config";
+const Contract = require('web3-eth-contract');
+const abi= require ("../../config/abiEth")
 
 
 @Injectable()
@@ -16,6 +18,8 @@ export class EthereumService {
   private privateKey
   private addrSender
   private web3
+  private ethContract
+  private ws
   constructor(
     @InjectRepository(BlockchainEntity)
     private blockchainRepository: Repository<BlockchainEntity>,
@@ -28,7 +32,9 @@ export class EthereumService {
     this.addrSender=ethconfig.get<string>('EthereumConfig.addrSender')
     this.chainId=ethconfig.get<number>('EthereumConfig.chainId')
     this.privateKey = ethconfig.get<string>('EthereumConfig.privateKey')
-    this.web3=new  Web3 (this.https)
+    this.ethContract=ethconfig.get<string>('EthereumConfig.ethContract')
+    this.ws=ethconfig.get<string>('TokenConfig.tokenWebSocketInfura')
+    this.web3=new Web3(this.ws)
   }
 
   async sendTx(send: object): Promise<any> {
@@ -43,14 +49,16 @@ export class EthereumService {
   }
 
   async sendTrans(send, id) {
+    let contract =  new Contract(abi, this.ethContract)
     let valueCoins=parseInt(send.value)
     const rawTx = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
-      to: send.to,
+      to: this.ethContract,
       from: this.addrSender,
       value: valueCoins,
-      chainId: this.chainId
+      chainId: this.chainId,
+      data: await contract.methods.send(send.to).encodeABI()
     }
 
     let signedTx=await this.web3.eth.accounts.signTransaction(rawTx, this.privateKey)

@@ -40,7 +40,6 @@ export class UsdtService {
   }
 
   async sendTx(send:object){
-
     let contract =  new Contract(abi, this.addrContract)
     for (let i = 0; i < Object.keys(send).length; i++) {
       let Record = await this.updateBd('Null', 'new', send[i])

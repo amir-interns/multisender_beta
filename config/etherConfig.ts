@@ -7,6 +7,7 @@ export default registerAs('EthereumConfig', () => ({
   chainId: parseInt(process.env.chainId) || 3,
   privateKey: String(process.env.EthprivateKey),
   addrSender: String(process.env.addrSender),
+  ethContract: String(process.env.ethContract),
 }));
 
 
