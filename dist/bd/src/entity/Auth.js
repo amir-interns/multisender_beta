@@ -10,18 +10,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Auth = void 0;
+const swagger_1 = require("@nestjs/swagger");
 const typeorm_1 = require("typeorm");
 let Auth = class Auth {
 };
 __decorate([
+    (0, swagger_1.ApiProperty)({ example: '1', description: 'Уникальный идентификатор' }),
     (0, typeorm_1.PrimaryGeneratedColumn)(),
     __metadata("design:type", Number)
 ], Auth.prototype, "id", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ example: 'Admin', description: 'Имя пользователя' }),
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Auth.prototype, "username", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ example: 'PASSWORD', description: 'Пароль пользователя' }),
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Auth.prototype, "password", void 0);

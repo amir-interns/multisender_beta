@@ -29,12 +29,9 @@ let BitcoinService = class BitcoinService {
         this.blockchainRepository = blockchainRepository;
         this.schedulerRegistry = schedulerRegistry;
         this.configService = configService;
-        this.sochain_network = configService.get('sochain_network');
-        this.privateKey = configService.get('privateKey');
-        this.sourceAddress = configService.get('sourceAddress');
-    }
-    sayHello() {
-        return 'btc';
+        this.sochain_network = configService.get('BitcoinConfig.sochain_network');
+        this.privateKey = configService.get('BitcoinConfig.privateKey');
+        this.sourceAddress = configService.get('BitcoinConfig.sourceAddress');
     }
     checkTx(txHash) {
         return axios.get(`https://sochain.com/api/v2/tx/${this.sochain_network}/${txHash}`).then(function (res) { return res.data; });

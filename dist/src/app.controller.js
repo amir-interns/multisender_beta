@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppController = void 0;
 const common_1 = require("@nestjs/common");
+const swagger_1 = require("@nestjs/swagger");
 const app_service_1 = require("./app.service");
 const auth_service_1 = require("./auth/auth.service");
 let AppController = class AppController {
@@ -29,6 +30,8 @@ let AppController = class AppController {
     }
 };
 __decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Процедура аутентификации' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Аутентификация' }),
     (0, common_1.Post)('auth'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -36,6 +39,8 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AppController.prototype, "login", null);
 __decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Процедура регистрации' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Регистрация' }),
     (0, common_1.Post)('regist'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -43,6 +48,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AppController.prototype, "regist", null);
 AppController = __decorate([
+    (0, swagger_1.ApiTags)('Основные методы'),
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [app_service_1.AppService,
         auth_service_1.AuthService])

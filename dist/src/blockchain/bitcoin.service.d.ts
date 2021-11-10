@@ -11,7 +11,6 @@ export declare class BitcoinService {
     privateKey: any;
     sourceAddress: any;
     constructor(blockchainRepository: Repository<BlockchainEntity>, schedulerRegistry: SchedulerRegistry, configService: ConfigService);
-    sayHello(): string;
     checkTx(txHash: string): Promise<object>;
     getBalance(address: string): Promise<object>;
     sendTx(body: any): Promise<{
