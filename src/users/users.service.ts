@@ -20,4 +20,11 @@ export class UsersService {
     return user
   }
 
+  async create(username:string, password:string):Promise <any>{
+    let auth=new Auth()
+    auth.username=username
+    auth.password=password
+    return this.auth.save(auth)
+  }
+
 }
