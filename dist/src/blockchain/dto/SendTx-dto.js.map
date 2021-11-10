@@ -1,1 +1,0 @@
-{"version":3,"file":"SendTx-dto.js","sourceRoot":"","sources":["../../../../src/blockchain/dto/SendTx-dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,6CAA6C;AAE7C,MAAa,SAAS;CAMrB;AAJG;IADC,IAAA,qBAAW,EAAC,EAAC,OAAO,EAAE,KAAK,EAAE,WAAW,EAAE,sBAAsB,EAAC,CAAC;;uCAC/C;AAGpB;IADC,IAAA,qBAAW,EAAC,EAAC,OAAO,EAAE,iEAAiE,EAAE,WAAW,EAAE,gBAAgB,EAAC,CAAC;;uCACrG;AALxB,8BAMC"}

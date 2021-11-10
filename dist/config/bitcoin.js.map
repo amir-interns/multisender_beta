@@ -1,1 +1,0 @@
-{"version":3,"file":"bitcoin.js","sourceRoot":"","sources":["../../config/bitcoin.ts"],"names":[],"mappings":";;AAAA,2CAA4C;AAE5C,kBAAe,IAAA,mBAAU,EAAC,eAAe,EAAE,GAAG,EAAE,CAAC,CAAC;IAC9C,eAAe,EAAE,OAAO,CAAC,GAAG,CAAC,eAAe;IAC5C,UAAU,EAAE,OAAO,CAAC,GAAG,CAAC,UAAU;IAClC,aAAa,EAAE,OAAO,CAAC,GAAG,CAAC,aAAa;CACzC,CAAC,CAAC,CAAC"}
