@@ -7,6 +7,8 @@ import {AuthService} from "../auth/auth.service";
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { BlockchainEntity } from 'bd/src/entity/blockchain.entity'
+import { SendTxDto } from './dto/SendTx-dto'
 
 interface IBlockchainService {
     sendTx(body: object): object;
@@ -34,7 +36,7 @@ export class BlockchainController {
 
 
     @ApiOperation({summary: 'Отправляет транзакцию в соответствии с указанными адресами и значениями сумм в выбранной сети'})
-    @ApiResponse({status: 200, description: 'Необходимо передать методом POST в теле запроса строку вида: { type: btc || eth || usdt, send: [{to: trhrth, value: 0.001}, ... ] }' })
+    @ApiResponse({status: 200, description: 'Необходимо передать методом POST в теле запроса строку вида: { type: btc || eth || usdt, send: [{to: trhrth, value: 0.001}, ... ] }', type: SendTxDto })
     //@UseGuards(JwtAuthGuard)
     @Post('sendTx')
     async sendBlockchainTx(@Body() params: any): Promise<object>{

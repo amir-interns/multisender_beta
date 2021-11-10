@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { BlockchainEntity } from "./blockchain.entity";
+import { BlockchainEntity } from "../../bd/src/entity/blockchain.entity";
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from "typeorm";
 import { BlockchainDto } from "./dto/blockchain.dto";
@@ -173,30 +173,30 @@ async findAll(): Promise<BlockchainEntity[]> {
   return this.blockchainRepository.find();
 }
 
-addCronJob(idTx: string, seconds: string, thH: string) {
+addCronJob(id: string, seconds: string, thH: string) {
   const job = new CronJob(`${seconds} * * * * *`, async() => {
     
     let confirms = await axios.get(`https://sochain.com/api/v2/tx/${this.sochain_network}/${thH}`).then(function(res)  { return res.data.data.confirmations })
-    if ((confirms === "1") || (confirms === "2")) {
+    if (Number(confirms) >= 1) {
       await getConnection()
       .createQueryBuilder()
-      .update("blockchain_entity")
+      .update(BlockchainEntity)
       .set({ status: "submitted" })
-      .where("id = :id", { id: idTx })
+      .where(id)
       .execute();
     }
     if (Number(confirms) >= 3) {
         await getConnection()
         .createQueryBuilder()
-        .update("blockchain_entity")
+        .update(BlockchainEntity)
         .set({ status: "confirmed" })
-        .where("id = :id", { id: idTx })
+        .where(id)
         .execute();
-        this.deleteCron(idTx)
+        this.deleteCron(id)
     }
   });
 
-  this.schedulerRegistry.addCronJob(idTx, job);
+  this.schedulerRegistry.addCronJob(id, job);
   job.start();
 }
     

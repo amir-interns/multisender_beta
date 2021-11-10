@@ -1,4 +1,4 @@
-import { BlockchainEntity } from "./blockchain.entity";
+import { BlockchainEntity } from "../../bd/src/entity/blockchain.entity";
 import { Repository } from "typeorm";
 import { BlockchainDto } from "./dto/blockchain.dto";
 import { SchedulerRegistry } from "@nestjs/schedule";
@@ -20,6 +20,6 @@ export declare class BitcoinService {
     findOne(id: string): Promise<BlockchainEntity>;
     create(blockchainDto: BlockchainDto): Promise<number>;
     findAll(): Promise<BlockchainEntity[]>;
-    addCronJob(idTx: string, seconds: string, thH: string): void;
+    addCronJob(id: string, seconds: string, thH: string): void;
     deleteCron(name: string): void;
 }

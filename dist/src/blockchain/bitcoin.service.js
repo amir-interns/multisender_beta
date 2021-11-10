@@ -14,7 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BitcoinService = void 0;
 const common_1 = require("@nestjs/common");
-const blockchain_entity_1 = require("./blockchain.entity");
+const blockchain_entity_1 = require("../../bd/src/entity/blockchain.entity");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const schedule_1 = require("@nestjs/schedule");
@@ -138,28 +138,28 @@ let BitcoinService = class BitcoinService {
     async findAll() {
         return this.blockchainRepository.find();
     }
-    addCronJob(idTx, seconds, thH) {
+    addCronJob(id, seconds, thH) {
         const job = new cron_1.CronJob(`${seconds} * * * * *`, async () => {
             let confirms = await axios.get(`https://sochain.com/api/v2/tx/${this.sochain_network}/${thH}`).then(function (res) { return res.data.data.confirmations; });
-            if ((confirms === "1") || (confirms === "2")) {
+            if (Number(confirms) >= 1) {
                 await (0, typeorm_3.getConnection)()
                     .createQueryBuilder()
-                    .update("blockchain_entity")
+                    .update(blockchain_entity_1.BlockchainEntity)
                     .set({ status: "submitted" })
-                    .where("id = :id", { id: idTx })
+                    .where(id)
                     .execute();
             }
             if (Number(confirms) >= 3) {
                 await (0, typeorm_3.getConnection)()
                     .createQueryBuilder()
-                    .update("blockchain_entity")
+                    .update(blockchain_entity_1.BlockchainEntity)
                     .set({ status: "confirmed" })
-                    .where("id = :id", { id: idTx })
+                    .where(id)
                     .execute();
-                this.deleteCron(idTx);
+                this.deleteCron(id);
             }
         });
-        this.schedulerRegistry.addCronJob(idTx, job);
+        this.schedulerRegistry.addCronJob(id, job);
         job.start();
     }
     deleteCron(name) {

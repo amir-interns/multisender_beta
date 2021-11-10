@@ -18,6 +18,8 @@ const bitcoin_service_1 = require("./bitcoin.service");
 const ethereum_service_1 = require("./ethereum.service");
 const usdt_service_1 = require("./usdt.service");
 const swagger_1 = require("@nestjs/swagger");
+const blockchain_entity_1 = require("../../bd/src/entity/blockchain.entity");
+const SendTx_dto_1 = require("./dto/SendTx-dto");
 let BlockchainController = class BlockchainController {
     constructor(bitcoinService, etheriumService, usdtService) {
         this.bitcoinService = bitcoinService;
@@ -45,7 +47,7 @@ __decorate([
 ], BlockchainController.prototype, "getBlockchainBalance", null);
 __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Отправляет транзакцию в соответствии с указанными адресами и значениями сумм в выбранной сети' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Необходимо передать методом POST в теле запроса строку вида: { type: btc || eth || usdt, send: [{to: trhrth, value: 0.001}, ... ] }' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Необходимо передать методом POST в теле запроса строку вида: { type: btc || eth || usdt, send: [{to: trhrth, value: 0.001}, ... ] }', type: SendTx_dto_1.SendTxDto }),
     (0, common_1.Post)('sendTx'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
