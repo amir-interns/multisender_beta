@@ -5,7 +5,7 @@ import {TasksUsdtService} from "./taskUsdtService";
 import {InjectRepository} from "@nestjs/typeorm";
 import {ConfigService} from "@nestjs/config";
 const Contract = require('web3-eth-contract');
-const abi= require ("../../config/abicontract")
+const abi= require ("../../config/abicontract.json")
 const Web3 = require('web3')
 
 

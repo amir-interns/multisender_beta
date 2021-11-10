@@ -3,7 +3,6 @@ import { BlockchainEntity } from "./blockchain.entity";
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from "typeorm";
 import { BlockchainDto } from "./dto/blockchain.dto";
-import { TasksService } from "./tasks.service";
 import { SchedulerRegistry } from "@nestjs/schedule";
 import { CronJob } from "cron";
 import { getConnection } from "typeorm";
