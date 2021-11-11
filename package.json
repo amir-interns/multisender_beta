@@ -10,7 +10,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "nest start --watch",
+    "start:dev1": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -18,7 +18,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "start:dev": "npm run copy:assets && npm run start:dev1",
+    "copy:assets": "cpx 'config/abicontract.json' 'dist/config/'"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",
@@ -33,6 +35,8 @@
     "axios": "^0.23.0",
     "bcrypt": "^5.0.1",
     "bitcore-lib": "^8.25.10",
+    "concurrently": "^6.3.0",
+    "cpx": "^1.5.0",
     "dotenv": "^10.0.0",
     "passport": "^0.5.0",
     "passport-jwt": "^4.0.0",
