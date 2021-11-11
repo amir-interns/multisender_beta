@@ -38,27 +38,34 @@ export class EthereumService {
   }
 
   async sendTx(send: object): Promise<any> {
+    let amounts=[]
+    let receivers=[]
+    let summaryCoins=0
     for (let i = 0; i < Object.keys(send).length; i++) {
       let validAdd = this.web3.utils.isAddress(send[i].to)
       if (validAdd != true) {
         return `${send[i].to} is wrong address!`
       }
-      let idRecord=await this.updateBd('Null','new', send[i])
-      await this.sendTrans(send[i], idRecord.id)
+      summaryCoins+=send[i].value
+      receivers.push(send[i].to)
+      amounts.push(send[i].value)
+
     }
+    let Record=await this.updateBd('Null','new', send)
+    this.sendTrans(receivers, amounts, Record.id, summaryCoins)
   }
 
-  async sendTrans(send, id) {
+  async sendTrans(receivers, amounts, id, summaryCoins) {
+
     let contract =  new Contract(abi, this.ethContract)
-    let valueCoins=parseInt(send.value)
     const rawTx = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
       to: this.ethContract,
       from: this.addrSender,
-      value: valueCoins,
+      value: summaryCoins,
       chainId: this.chainId,
-      data: await contract.methods.send(send.to).encodeABI()
+      data: await contract.methods.send(receivers, amounts).encodeABI()
     }
 
     let signedTx=await this.web3.eth.accounts.signTransaction(rawTx, this.privateKey)
@@ -67,7 +74,7 @@ export class EthereumService {
     await getConnection()
       .createQueryBuilder()
       .update(BlockchainEntity)
-      .set({ status:'submitted', txHash:result.transactionHash, result:send, date:today})
+      .set({ status:'submitted', txHash:result.transactionHash,  date:today})
       .where({id})
       .execute();
     this.tasksService.addCronJob(result.transactionHash, id, this.web3)
