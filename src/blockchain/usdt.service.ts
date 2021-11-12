@@ -5,9 +5,8 @@ import {TasksUsdtService} from "./taskUsdtService";
 import {InjectRepository} from "@nestjs/typeorm";
 import {ConfigService} from "@nestjs/config";
 const Contract = require('web3-eth-contract');
-import * as abi from '/config/abicontract.json'
+const abi= require ("../../config/abicontract")
 const Web3 = require('web3')
-
 
 
 
@@ -32,7 +31,6 @@ export class UsdtService {
   }
 
   async getBalance(){
-    const web3 = new Web3(this.webSocketInfura)
     Contract.setProvider(this.webSocketInfura)
     let contract =  new Contract(abi, this.addrContract)
     let value=await contract.methods.balanceOf(this.addrSender).call()
