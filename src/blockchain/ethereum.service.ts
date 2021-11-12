@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {BlockchainEntity} from "../../bd/src/entity/blockchain.entity";
+import { BlockchainEntity } from 'src/entity/blockchain.entity'; 
 import {getConnection, Repository} from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm"
 import {TasksEthService} from "./tasksEth.service";

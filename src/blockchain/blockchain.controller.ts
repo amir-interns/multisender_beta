@@ -7,7 +7,7 @@ import {AuthService} from "../auth/auth.service";
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { BlockchainEntity } from 'bd/src/entity/blockchain.entity'
+import { BlockchainEntity } from 'src/entity/blockchain.entity' 
 import { SendTxDto } from './dto/SendTx-dto'
 
 interface IBlockchainService {

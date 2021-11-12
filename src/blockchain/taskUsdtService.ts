@@ -2,7 +2,7 @@
 import { Injectable } from "@nestjs/common";
 import { CronJob } from "cron";
 import { SchedulerRegistry } from "@nestjs/schedule";
-import { BlockchainEntity } from "../../bd/src/entity/blockchain.entity";
+import { BlockchainEntity } from "src/entity/blockchain.entity"; 
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import {getConnection} from "typeorm";
