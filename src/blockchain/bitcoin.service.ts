@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { BlockchainEntity } from "src/entity/blockchain.entity"; 
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from "typeorm";
@@ -19,6 +19,7 @@ export class BitcoinService {
   public sochain_network
   public privateKey
   public sourceAddress  
+  logger: Logger
 
   constructor(@InjectRepository(BlockchainEntity)
               private blockchainRepository: Repository<BlockchainEntity>,
@@ -28,6 +29,7 @@ export class BitcoinService {
                 this.sochain_network = configService.get<string>('BitcoinConfig.sochain_network')
                 this.privateKey = configService.get<string>('BitcoinConfig.privateKey')
                 this.sourceAddress = configService.get<string>('BitcoinConfig.sourceAddress')
+                this.logger = new Logger()
               }
 
    checkTx(txHash: string): Promise<object> {
@@ -159,6 +161,7 @@ findOne(id: string): Promise<BlockchainEntity> {
 }
 
 async create(blockchainDto: BlockchainDto): Promise<number> {
+  this.logger.log('New transaction added to DB.')
   const blockchainEntity = new BlockchainEntity();
   blockchainEntity.txHash = blockchainDto.txHash;
   blockchainEntity.status = blockchainDto.status;
@@ -182,26 +185,30 @@ addCronJob(id: string, seconds: string, thH: string) {
       .createQueryBuilder()
       .update(BlockchainEntity)
       .set({ status: "submitted" })
-      .where(id)
+      .where({id})
       .execute();
+      this.logger.log(`Transaction id=${id} is submitted.`)
     }
     if (Number(confirms) >= 3) {
         await getConnection()
         .createQueryBuilder()
         .update(BlockchainEntity)
         .set({ status: "confirmed" })
-        .where(id)
+        .where({id})
         .execute();
         this.deleteCron(id)
     }
   });
 
   this.schedulerRegistry.addCronJob(id, job);
+  this.logger.log('New CronJob Added.')
   job.start();
+  this.logger.log('New CronJob started')
 }
     
 deleteCron(name: string) {
 this.schedulerRegistry.deleteCronJob(name);
+this.logger.log(`CronJob id=${name} is closed. Transaction confirmed.`)
 }
 
 }
