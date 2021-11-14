@@ -21,7 +21,7 @@ export class UsdtService {
   constructor(
     @InjectRepository(BlockchainEntity)
     private blockchainRepository: Repository<BlockchainEntity>,
-    private taskService:TasksEthService,
+    // private taskService:TasksEthService,
     private tokenConfig:ConfigService)
   {
     this.webSocketInfura=tokenConfig.get<string>('TokenConfig.tokenWebSocketInfura')
@@ -59,7 +59,7 @@ export class UsdtService {
         .set({ status:'submitted', txHash:result.transactionHash, result:send[i], date:today})
         .where({id:Record.id})
         .execute();
-      this.taskService.addCronJob(result.transactionHash, Record.id, this.web3)
+      // this.taskService.addCronJob(result.transactionHash, Record.id, this.web3)
     }
   }
 

@@ -23,7 +23,7 @@ export class EthereumService {
   constructor(
     @InjectRepository(BlockchainEntity)
     private blockchainRepository: Repository<BlockchainEntity>,
-    private tasksService: TasksEthService,
+    // private tasksService: TasksEthService,
     private ethconfig:ConfigService,
   ) {
     this.https=ethconfig.get<string>('EthereumConfig.https')
@@ -52,10 +52,8 @@ export class EthereumService {
 
     }
     let Record=await this.updateBd('Null','new', send)
-    this.sendTrans(receivers, amounts, Record.id, summaryCoins)
-  }
+    const id =Record.id
 
-  async sendTrans(receivers, amounts, id, summaryCoins) {
 
     let contract =  new Contract(abi, this.ethContract)
     const rawTx = {
@@ -77,7 +75,9 @@ export class EthereumService {
       .set({ status:'submitted', txHash:result.transactionHash,  date:today})
       .where({id})
       .execute();
-    this.tasksService.addCronJob(result.transactionHash, id, this.web3)
+    // this.tasksService.addCronJob(result.transactionHash, id, this.web3)
+    console.log(result.transactionHash, id, this.web3)
+    return [result.transactionHash, id, this.web3]
   }
 
 

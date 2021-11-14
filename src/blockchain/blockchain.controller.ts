@@ -4,6 +4,7 @@ import {Request } from 'express'
 import { EthereumService } from './ethereum.service'
 import {UsdtService} from './usdt.service'
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
+import {TasksEthService} from "./tasks/tasksEth.service";
 
 
 interface IBlockchainService {
@@ -16,12 +17,14 @@ interface IBlockchainService {
 @Controller('blockchain')
 export class BlockchainController {
     constructor(private bitcoinService: BitcoinService,
+                private etheriumTask: TasksEthService,
                 private etheriumService: EthereumService,
-                private usdtService: UsdtService)
+                private usdtService: UsdtService
+                )
                  {}
 
 
-    //@UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     @Post('balance/:type/:address')
     async getBlockchainBalance(@Param('type') type, @Param('address') address): Promise<any> {
        const service: IBlockchainService = type === 'eth' ? this.etheriumService : (type === 'btc' ? this.bitcoinService : this.usdtService)
@@ -31,11 +34,12 @@ export class BlockchainController {
 
 
 
-    //@UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     @Post('sendTx')
-    async sendBlockchainTx(@Body() params: any): Promise<object>{
-        const service: IBlockchainService = params.type === 'eth' ? this.etheriumService : (params.type === 'btc' ? this.bitcoinService : this.usdtService)
-        return service.sendTx(params.send)
+    async sendBlockchainTx(@Body() params: any):Promise<void>{
+        // const service = params.type === ('eth' || 'usdt') ? this.etheriumTask : this.bitcoinService
+      const service=this.etheriumTask
+        return service.send(params.send, params.type)
     }
 
 }

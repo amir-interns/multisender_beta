@@ -7,28 +7,41 @@ import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import {getConnection} from "typeorm";
 import {ConfigService} from "@nestjs/config";
+import {EthereumService} from "../ethereum.service";
+import {UsdtService} from "../usdt.service";
 const Web3 = require('web3')
 
-
+interface IEthService {
+  sendTx(body: object): object;
+}
 
 @Injectable()
 export class TasksEthService {
-  private https
-  private web3
+  // private https
+  // private web3
 
   constructor(@InjectRepository(BlockchainEntity)
               private blockchainRepository: Repository<BlockchainEntity>,
               private schedulerRegistry: SchedulerRegistry,
-              private ethconfig:ConfigService) {
-    this.https=ethconfig.get<string>('EthereumConfig.https')
-    this.web3=new Web3(this.https);
+              private ethconfig:ConfigService,
+              private ethereumService: EthereumService,
+              private usdtService: UsdtService) {
+    // this.https=ethconfig.get<string>('EthereumConfig.https')
+    // this.web3=new Web3(this.https);
   }
 
 
-  addCronJob(hash: string, id,web3) {
+  async send (send, type){
+    const service= type=='eth' ? this.ethereumService : this.usdtService
+    const res= await service.sendTx(send)
+    this.addCronJob(res[0], res[1], res[2])
+  }
+
+  addCronJob(hash, id,web3) {
     const job = new CronJob(`10 * * * * *`, () => {
-      let receipt = this.web3.eth.getTransactionReceipt(hash).then( async (value)=> {
+      web3.eth.getTransactionReceipt(hash).then( async (value)=> {
         let blockN=parseInt(value.blockNumber)
+        console.log(blockN)
         if (blockN >= 3) {
           let today=new Date()
           await getConnection()
