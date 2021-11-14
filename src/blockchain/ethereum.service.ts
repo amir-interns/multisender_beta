@@ -76,7 +76,6 @@ export class EthereumService {
       .where({id})
       .execute();
     // this.tasksService.addCronJob(result.transactionHash, id, this.web3)
-    console.log(result.transactionHash, id, this.web3)
     return [result.transactionHash, id, this.web3]
   }
 

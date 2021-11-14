@@ -41,7 +41,6 @@ export class TasksEthService {
     const job = new CronJob(`10 * * * * *`, () => {
       web3.eth.getTransactionReceipt(hash).then( async (value)=> {
         let blockN=parseInt(value.blockNumber)
-        console.log(blockN)
         if (blockN >= 3) {
           let today=new Date()
           await getConnection()

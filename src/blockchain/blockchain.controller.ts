@@ -17,8 +17,8 @@ interface IBlockchainService {
 @Controller('blockchain')
 export class BlockchainController {
     constructor(private bitcoinService: BitcoinService,
-                private etheriumTask: TasksEthService,
-                private etheriumService: EthereumService,
+                private ethereumTask: TasksEthService,
+                private ethereumService: EthereumService,
                 private usdtService: UsdtService
                 )
                  {}
@@ -27,7 +27,7 @@ export class BlockchainController {
     @UseGuards(JwtAuthGuard)
     @Post('balance/:type/:address')
     async getBlockchainBalance(@Param('type') type, @Param('address') address): Promise<any> {
-       const service: IBlockchainService = type === 'eth' ? this.etheriumService : (type === 'btc' ? this.bitcoinService : this.usdtService)
+       const service: IBlockchainService = type === 'eth' ? this.ethereumService : (type === 'btc' ? this.bitcoinService : this.usdtService)
        return await service.getBalance(address)
     }
 
@@ -37,9 +37,9 @@ export class BlockchainController {
     @UseGuards(JwtAuthGuard)
     @Post('sendTx')
     async sendBlockchainTx(@Body() params: any):Promise<void>{
-        // const service = params.type === ('eth' || 'usdt') ? this.etheriumTask : this.bitcoinService
-      const service=this.etheriumTask
-        return service.send(params.send, params.type)
+      // const service = params.type === ('eth' || 'usdt') ? this.etheriumTask : this.bitcoinService
+      const service =this.ethereumTask
+      return service.send(params.send, params.type)
     }
 
 }

@@ -30,6 +30,7 @@ export class UsdtService {
     this.addrSender=tokenConfig.get<string>('TokenConfig.tokenAddrSender')
     this.addrContract=tokenConfig.get<string>('TokenConfig.tokenAddrContract')
     this.web3=new Web3(this.webSocketInfura)
+
   }
 
   async getBalance(){
@@ -52,6 +53,7 @@ export class UsdtService {
 
       let signedTx = await this.web3.eth.accounts.signTransaction(tx, this.privateKey)
       let result = await this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+
       let today=new Date()
       await getConnection()
         .createQueryBuilder()
@@ -60,6 +62,7 @@ export class UsdtService {
         .where({id:Record.id})
         .execute();
       // this.taskService.addCronJob(result.transactionHash, Record.id, this.web3)
+      return  [result.transactionHash, Record.id, this.web3]
     }
   }
 

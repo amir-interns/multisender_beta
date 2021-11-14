@@ -7,6 +7,7 @@ export default registerAs('TokenConfig', () => ({
   tokenPrivateKey: String(process.env.tokenPrivateKey),
   tokenAddrSender: String(process.env.tokenAddrSender),
   tokenAddrContract:String(process.env.tokenAddrContract)||"0x583cbBb8a8443B38aBcC0c956beCe47340ea1367",
+  tokenMultisenderAddrContract:String(process.env.tokenMultisenderAddrContract)||"0x85CaD54e78ee1F1E293d8C7d116ca0F97CD10f32"
 }));
 
 
