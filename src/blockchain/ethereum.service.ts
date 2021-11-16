@@ -23,7 +23,6 @@ export class EthereumService {
   constructor(
     @InjectRepository(BlockchainEntity)
     private blockchainRepository: Repository<BlockchainEntity>,
-    // private tasksService: TasksEthService,
     private ethconfig:ConfigService,
   ) {
     this.https=ethconfig.get<string>('EthereumConfig.https')
@@ -75,7 +74,6 @@ export class EthereumService {
       .set({ status:'submitted', txHash:result.transactionHash,  date:today})
       .where({id})
       .execute();
-    // this.tasksService.addCronJob(result.transactionHash, id, this.web3)
     return [result.transactionHash, id, this.web3]
   }
 
