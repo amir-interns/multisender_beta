@@ -2,6 +2,11 @@
 	{
 		"inputs": [
 			{
+				"internalType": "contract IERC20",
+				"name": "token",
+				"type": "address"
+			},
+			{
 				"internalType": "address payable[]",
 				"name": "clients",
 				"type": "address[]"
@@ -10,14 +15,9 @@
 				"internalType": "uint256[]",
 				"name": "amounts",
 				"type": "uint256[]"
-			},
-			{
-				"internalType": "address payable",
-				"name": "tokenContract",
-				"type": "address"
 			}
 		],
-		"name": "send",
+		"name": "transferERC20",
 		"outputs": [],
 		"stateMutability": "payable",
 		"type": "function"

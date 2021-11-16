@@ -17,8 +17,7 @@ interface IEthService {
 
 @Injectable()
 export class TasksEthService {
-  // private https
-  // private web3
+
 
   constructor(@InjectRepository(BlockchainEntity)
               private blockchainRepository: Repository<BlockchainEntity>,
@@ -26,8 +25,6 @@ export class TasksEthService {
               private ethconfig:ConfigService,
               private ethereumService: EthereumService,
               private usdtService: UsdtService) {
-    // this.https=ethconfig.get<string>('EthereumConfig.https')
-    // this.web3=new Web3(this.https);
   }
 
 
