@@ -6,6 +6,9 @@ import {UsdtService} from './usdt.service'
 import {AuthService} from "../auth/auth.service";
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
 import { AuthGuard } from '@nestjs/passport';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { BlockchainEntity } from 'src/entity/blockchain.entity' 
+import { SendTxDto } from './dto/SendTx-dto'
 
 interface IBlockchainService {
     sendTx(body: object): object;
@@ -13,7 +16,7 @@ interface IBlockchainService {
 }
 
 
-
+@ApiTags('Blochchain методы')
 @Controller('blockchain')
 export class BlockchainController {
     constructor(private bitcoinService: BitcoinService,
@@ -21,7 +24,8 @@ export class BlockchainController {
                 private usdtService: UsdtService)
                  {}
 
-
+    @ApiOperation({summary: 'Возвращает баланс кошелька address в сети типа type'})
+    @ApiResponse({status: 200, description: 'В пути запроса явно указать тип и адрес' })
     //@UseGuards(JwtAuthGuard)
     @Post('balance/:type/:address')
     async getBlockchainBalance(@Param('type') type, @Param('address') address): Promise<any> {
@@ -31,7 +35,8 @@ export class BlockchainController {
 
 
 
-
+    @ApiOperation({summary: 'Отправляет транзакцию в соответствии с указанными адресами и значениями сумм в выбранной сети'})
+    @ApiResponse({status: 200, description: 'Необходимо передать методом POST в теле запроса строку вида: { type: btc || eth || usdt, send: [{to: trhrth, value: 0.001}, ... ] }', type: SendTxDto })
     //@UseGuards(JwtAuthGuard)
     @Post('sendTx')
     async sendBlockchainTx(@Body() params: any): Promise<object>{

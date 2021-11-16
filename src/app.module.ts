@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -7,9 +7,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import  database  from 'config/database'
 import BitcoinConfig from 'config/bitcoin'
-
+import { BlockchainEntity } from './entity/blockchain.entity'; 
+import { Auth } from './entity/Auth'; 
+import { AuthModule } from './auth/auth.module';
 import EthereumConfig from 'config/etherConfig'
 import TokenConfig from 'config/etherConfig'
+import { LoggerMiddleware } from './utils/logger.middleware';
 
 
 @Module({
@@ -36,5 +39,9 @@ import TokenConfig from 'config/etherConfig'
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule{
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*')
+  }
+}
 
