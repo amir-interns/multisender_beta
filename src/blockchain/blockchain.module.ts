@@ -14,10 +14,12 @@ import BitcoinConfig from 'config/bitcoin'
 import EthereumConfig from 'config/etherConfig'
 import TokenConfig from 'config/tokenConfig'
 import database from "../../config/database";
+import { TrxService } from './trx.service';
+import { Trc20Service } from './trc20.service';
 
 @Module({
     imports: [TypeOrmModule.forFeature( [ BlockchainEntity, Auth ]), AuthModule, ConfigModule.forFeature(BitcoinConfig), ConfigModule.forFeature(TokenConfig), ConfigModule.forFeature(EthereumConfig)],
-    providers: [ BitcoinService, EthereumService, UsdtService, TasksEthService, TasksUsdtService ],
+    providers: [ BitcoinService, EthereumService, UsdtService, TasksEthService, TasksUsdtService, TrxService, Trc20Service ],
     controllers: [BlockchainController],
 })
 export class BlockchainModule {

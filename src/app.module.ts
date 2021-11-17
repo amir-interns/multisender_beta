@@ -12,11 +12,12 @@ import { Auth } from './entity/Auth';
 import { AuthModule } from './auth/auth.module';
 import EthereumConfig from 'config/etherConfig'
 import TokenConfig from 'config/etherConfig'
+import TrxConfig from 'config/trx'
 import { LoggerMiddleware } from './utils/logger.middleware';
 
 
 @Module({
-  imports: [ConfigModule.forRoot({ load: [database, BitcoinConfig, EthereumConfig, TokenConfig], envFilePath: '.development.env' }),
+  imports: [ConfigModule.forRoot({ load: [database, BitcoinConfig, EthereumConfig, TokenConfig, TrxConfig], envFilePath: '.development.env' }),
 
             TypeOrmModule.forRootAsync({
               imports: [ConfigModule],

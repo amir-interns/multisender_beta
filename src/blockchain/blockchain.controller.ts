@@ -7,8 +7,9 @@ import {AuthService} from "../auth/auth.service";
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { BlockchainEntity } from 'src/entity/blockchain.entity' 
 import { SendTxDto } from './dto/SendTx-dto'
+import { TrxService } from './trx.service'
+import { Trc20Service } from './trc20.service'
 
 interface IBlockchainService {
     sendTx(body: object): object;
@@ -21,7 +22,9 @@ interface IBlockchainService {
 export class BlockchainController {
     constructor(private bitcoinService: BitcoinService,
                 private etheriumService: EthereumService,
-                private usdtService: UsdtService)
+                private usdtService: UsdtService,
+                private trxService: TrxService,
+                private trc20Service: Trc20Service)
                  {}
 
     @ApiOperation({summary: 'Возвращает баланс кошелька address в сети типа type'})
@@ -29,7 +32,7 @@ export class BlockchainController {
     //@UseGuards(JwtAuthGuard)
     @Post('balance/:type/:address')
     async getBlockchainBalance(@Param('type') type, @Param('address') address): Promise<any> {
-       const service: IBlockchainService = type === 'eth' ? this.etheriumService : (type === 'btc' ? this.bitcoinService : this.usdtService)
+       const service: IBlockchainService = type === 'eth' ? this.etheriumService : (type === 'btc' ? this.bitcoinService : (type === 'usdt' ? this.usdtService : ( type === 'trx' ? this.trxService : this.trc20Service)))
        return await service.getBalance(address)
     }
 
@@ -40,8 +43,13 @@ export class BlockchainController {
     //@UseGuards(JwtAuthGuard)
     @Post('sendTx')
     async sendBlockchainTx(@Body() params: any): Promise<object>{
-        const service: IBlockchainService = params.type === 'eth' ? this.etheriumService : (params.type === 'btc' ? this.bitcoinService : this.usdtService)
+        const service: IBlockchainService = params.type === 'eth' ? this.etheriumService : (params.type === 'btc' ? this.bitcoinService : (params.type === 'usdt' ? this.usdtService : ( params.type === 'trx' ? this.trxService : this.trc20Service)))
         return service.sendTx(params.send)
+    }
+
+    @Get('CreateTrx')
+    createTrx() {
+        return this.trxService.create()
     }
 
 }
