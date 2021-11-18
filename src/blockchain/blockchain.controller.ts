@@ -9,7 +9,7 @@ import {TasksEthService} from "./tasks/tasksEth.service";
 
 interface IBlockchainService {
     sendTx(body: object): object;
-    getBalance(address: string): object;
+    getBalance(address: string): object; //Type  вместо адреса
 }
 
 
@@ -27,8 +27,9 @@ export class BlockchainController {
     @UseGuards(JwtAuthGuard)
     @Post('balance/:type/:address')
     async getBlockchainBalance(@Param('type') type, @Param('address') address): Promise<any> {
-       const service: IBlockchainService = type === 'eth' ? this.ethereumService : (type === 'btc' ? this.bitcoinService : this.usdtService)
-       return await service.getBalance(address)
+       // const service: IBlockchainService = type === 'eth' ? this.ethereumService : (type === 'btc' ? this.bitcoinService : this.usdtService)
+      const service =this.ethereumTask
+      return await service.getBalance(type)
     }
 
 

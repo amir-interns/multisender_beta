@@ -9,6 +9,7 @@ const Contract = require('web3-eth-contract');
 const abi= require ("../../config/abiEth")
 
 
+
 @Injectable()
 export class EthereumService {
   private https
@@ -34,6 +35,12 @@ export class EthereumService {
     this.ethContract=ethconfig.get<string>('EthereumConfig.ethContract')
     this.ws=ethconfig.get<string>('TokenConfig.tokenWebSocketInfura')
     this.web3=new Web3(this.ws)
+  }
+
+  async getBalance(){
+    const web3 =new  Web3 (this.https)
+    var bal = await web3.eth.getBalance(this.addrSender)
+    return parseInt(bal)
   }
 
   async sendTx(send: object): Promise<any> {
@@ -78,11 +85,7 @@ export class EthereumService {
   }
 
 
-  async getBalance(address) {
-    const web3 =new  Web3 (this.https)
-    var bal = await web3.eth.getBalance(address)
-    return bal
-  }
+
 
   updateBd(txHash, status, result){
     const today = new Date()

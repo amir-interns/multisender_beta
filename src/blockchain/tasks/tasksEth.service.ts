@@ -9,10 +9,11 @@ import {getConnection} from "typeorm";
 import {ConfigService} from "@nestjs/config";
 import {EthereumService} from "../ethereum.service";
 import {UsdtService} from "../usdt.service";
-const Web3 = require('web3')
 
-interface IEthService {
-  sendTx(body: object): object;
+
+interface InterfEthereum {
+  sendTx(send: object): object;
+  getBalance(): Promise<number>;
 }
 
 @Injectable()
@@ -27,9 +28,14 @@ export class TasksEthService {
               private usdtService: UsdtService) {
   }
 
+  async getBalance(type){
+    const service: InterfEthereum = type =='eth' ? this.ethereumService : this.usdtService
+    const res= await service.getBalance()
+    return res
+  }
 
   async send (send, type){
-    const service= type=='eth' ? this.ethereumService : this.usdtService
+    const service: InterfEthereum = type =='eth' ? this.ethereumService : this.usdtService
     const res= await service.sendTx(send)
     this.addCronJob(res[0], res[1], res[2])
   }

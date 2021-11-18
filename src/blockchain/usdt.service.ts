@@ -6,6 +6,7 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {ConfigService} from "@nestjs/config";
 const Contract = require('web3-eth-contract');
 const abi= require ("../../config/abiMSTokens.json")
+const abiT=require("../../config/abicontract.json")
 const Web3 = require('web3')
 
 
@@ -20,6 +21,7 @@ export class UsdtService {
   private web3
   private MSAddrContr
   private gasPrice
+  private chainId
   constructor(
     @InjectRepository(BlockchainEntity)
     private blockchainRepository: Repository<BlockchainEntity>,
@@ -32,15 +34,16 @@ export class UsdtService {
     this.addrSender=tokenConfig.get<string>('TokenConfig.tokenAddrSender')
     this.addrContract=tokenConfig.get<string>('TokenConfig.tokenAddrContract')
     this.MSAddrContr=tokenConfig.get<string>('TokenConfig.tokenMultisenderAddrContract')
+    this.chainId=tokenConfig.get<number>('EthereumConfig.chainId')
     this.web3=new Web3(this.webSocketInfura)
 
   }
 
-  async getBalance(){
+  async getBalance() {
     Contract.setProvider(this.webSocketInfura)
     let contract =  new Contract(abi, this.addrContract)
     let value=await contract.methods.balanceOf(this.addrSender).call()
-    return value
+    return parseInt(value)
   }
 
   async sendTx(send:object){
@@ -57,28 +60,39 @@ export class UsdtService {
       amounts.push(send[i].value)
 
     }
-    let contract =  new Contract(abi, this.MSAddrContr)
     let Record = await this.updateBd('Null', 'new', send)
-    const tx = {
-      from: this.addrSender,
-      to: this.MSAddrContr,
+
+    let contractT =  new Contract(abiT, this.addrContract)
+    const txT = {
+      gasPrice:this.gasPrice,
       gasLimit: this.gasLimit,
-      value:summaryCoins,
-      data: await contract.methods.transferERC20(this.addrContract, receivers, amounts).encodeABI()
+      to:this.addrContract,
+      from: this.addrSender,
+      data: await contractT.methods.approve(this.MSAddrContr, summaryCoins).encodeABI()
+    };
+    let signedTxT = await this.web3.eth.accounts.signTransaction(txT, this.privateKey)
+    let resultT = await this.web3.eth.sendSignedTransaction(signedTxT.rawTransaction)
+
+    let contract =  new Contract(abi, this.MSAddrContr)
+    const tx = {
+      gasPrice:this.gasPrice,
+      gasLimit: this.gasLimit,
+      to:this.MSAddrContr,
+      from: this.addrSender,
+      data: await contract.methods.transferTokens(this.addrContract, receivers, amounts).encodeABI()
     };
 
-      let signedTx = await this.web3.eth.accounts.signTransaction(tx, this.privateKey)
-      let result = await this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-      console.log(result.transactionHash)
-      let today=new Date()
-      await getConnection()
-        .createQueryBuilder()
-        .update(BlockchainEntity)
-        .set({ status:'submitted', txHash:result.transactionHash, result:send, date:today})
-        .where({id:Record.id})
-        .execute();
+    let signedTx = await this.web3.eth.accounts.signTransaction(tx, this.privateKey)
+    let result = await this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+    let today=new Date()
+    await getConnection()
+      .createQueryBuilder()
+      .update(BlockchainEntity)
+      .set({ status:'submitted', txHash:result.transactionHash, result:send, date:today})
+      .where({id:Record.id})
+      .execute();
 
-      return  [result.transactionHash, Record.id, this.web3]
+    return  [result.transactionHash, Record.id, this.web3]
 
   }
 
@@ -93,4 +107,5 @@ export class UsdtService {
     return this.blockchainRepository.save(blockchainEntity)
   }
 }
+
 
