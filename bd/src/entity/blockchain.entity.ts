@@ -5,7 +5,7 @@ export class BlockchainEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({nullable: true})
   txHash: string;
 
   @Column()
