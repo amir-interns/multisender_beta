@@ -6,6 +6,7 @@ export default registerAs('TrxConfig', () => ({
     eventServer: process.env.EVENT_SERVER,
     privateKey: process.env.TRX_PRIVATE_KEY,
     TrxSourceAddress: process.env.TRX_SOURCE_ADDRESS,
+    contractAddress: process.env.CONTRACT_ADDRESS
   }));
               
   

@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 const TronWeb = require('tronweb');
+const abi = require('../../config/trxAbi.json')
 
 @Injectable()
 export class TrxService {
@@ -10,6 +11,7 @@ export class TrxService {
     public privateKey
     public tronWeb
     public sourceAddress
+    public contractAddress
 
     constructor(private configService: ConfigService) {
         this.fullNode = configService.get<string>('TrxConfig.fullNode')
@@ -18,6 +20,7 @@ export class TrxService {
         this.privateKey = configService.get<string>('TrxConfig.privateKey')
         this.tronWeb = new TronWeb(this.fullNode, this.solidityNode, this.eventServer, this.privateKey)
         this.sourceAddress = configService.get<string>('TrxConfig.TrxSourceAddress')
+        this.contractAddress = configService.get<string>('TrxConfig.contractAddress')
     }
 
 
@@ -52,13 +55,29 @@ export class TrxService {
             throw new Error("Balance is too low for this transaction");
         }
         //Send Trx
-        for (let i of body) {
+        let amounts=[]
+        let receivers=[]
+        let summaryCoins=0
+        for (let i = 0; i < Object.keys(body).length; i++) {
+            summaryCoins+=body[i].value
+            receivers.push(body[i].to)
+            amounts.push(body[i].value)
+        }
+        let contract = await this.tronWeb.contract(abi, this.contractAddress); 
+        let result = await contract.send(receivers,amounts).send({
+            feeLimit:100_000_000,
+            callValue:summaryCoins,
+            shouldPollResponse:true
+        });
+        return result
+
+        /*for (let i of body) {
             console.log('value: ', this.privateKey)
             const tradeobj = await this.tronWeb.transactionBuilder.sendTrx(i.to, i.value);
             const signedtxn = await this.tronWeb.trx.sign(tradeobj, this.privateKey);
             const receipt = await this.tronWeb.trx.sendRawTransaction(signedtxn);
             return receipt
-        }
+        }*/
     }
 
     create() {

@@ -1,0 +1,1 @@
+{"entrys":[{"payable":true,"inputs":[{"name":"token","type":"address"},{"name":"clients","type":"address[]"},{"name":"amounts","type":"uint256[]"}],"name":"transferTokens","stateMutability":"Payable","type":"Function"}]}
