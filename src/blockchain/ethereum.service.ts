@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 const Web3 = require ('web3')
 import {ConfigService} from '@nestjs/config'
 const Contract = require ('web3-eth-contract')
-const abi = require ('config/abiEth')
+import *  as abi from 'assets/abiEth.json'
 const BigNumber = require('bignumber.js')
 
 
@@ -62,7 +62,7 @@ export class EthereumService {
     blockchainEntity.typeCoin = 'eth'
     blockchainEntity.result = send
     const bdRecord = await this.blockchainRepository.save(blockchainEntity)
-    const contract =  new Contract(abi, this.ethContract)
+    const contract =  new Contract(abi['default'], this.ethContract)
     const rawTx = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
