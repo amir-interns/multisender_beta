@@ -4,9 +4,9 @@ export default registerAs('database', () => ({
     type: "postgres",
     port: Number(process.env.PORT),
     host: process.env.HOST,
-    username: process.env.username,
-    password: process.env.password,
-    database: process.env.database,
+    username: process.env.USERNAME,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
     synchronize: true
   }));
               
