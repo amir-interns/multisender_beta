@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
-import {BlockchainEntity} from "../../bd/src/entity/blockchain.entity"
+import {BlockchainEntity} from "../entity/blockchain.entity"
 import {getConnection, Repository} from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
 const Web3 = require ('web3')
 import {ConfigService} from '@nestjs/config'
 const Contract = require ('web3-eth-contract')
 const abi = require ('../../config/abiEth')
-const bigNumber = require('big-number')
+const BigNumber = require('bignumber.js');
 
 
 @Injectable()
@@ -22,35 +22,37 @@ export class EthereumService {
 
   constructor(
     @InjectRepository(BlockchainEntity)
-    private blockchainRepository: Repository<BlockchainEntity>,
+    private blockchainRepository:Repository<BlockchainEntity>,
     private ethconfig:ConfigService,
   ) {
-    this.gasPrice= ethconfig.get<number>('EthereumConfig.gasPrice')
-    this.gasLimit=ethconfig.get<number>('EthereumConfig.gasLimit')
-    this.addrSender=ethconfig.get<string>('EthereumConfig.addrSender')
-    this.chainId=ethconfig.get<number>('EthereumConfig.chainId')
+    this.gasPrice = ethconfig.get<number>('EthereumConfig.gasPrice')
+    this.gasLimit = ethconfig.get<number>('EthereumConfig.gasLimit')
+    this.addrSender = ethconfig.get<string>('EthereumConfig.addrSender')
+    this.chainId = ethconfig.get<number>('EthereumConfig.chainId')
     this.privateKey = ethconfig.get<string>('EthereumConfig.privateKey')
-    this.ethContract=ethconfig.get<string>('EthereumConfig.ethContract')
-    this.ws=ethconfig.get<string>('TokenConfig.tokenWebSocketInfura')
-    this.web3=new Web3(this.ws)
+    this.ethContract = ethconfig.get<string>('EthereumConfig.ethContract')
+    this.ws = ethconfig.get<string>('TokenConfig.tokenWebSocketInfura')
+    this.web3 = new Web3(this.ws)
   }
 
   async getBalance(address:string){
     if (! this.web3.utils.isAddress(address)){
       return `${address} is wrong address!`
     }
-    return parseInt(this.web3.eth.getBalance(this.addrSender), 10)
+    return parseInt(await this.web3.eth.getBalance(this.addrSender), 10)
   }
 
   async sendTx(send: object): Promise<any> {
     const amounts = []
     const receivers = []
-    let summaryCoins = bigNumber(0)
+    let summaryCoins = BigNumber(0)
+    let sum = 0
     for (let i = 0; i < Object.keys(send).length; i++) {
       if (this.web3.utils.isAddress(send[i].to) !== true) {
         return `${send[i].to} is wrong address!`
       }
-      summaryCoins += bigNumber(send[i].value)
+      summaryCoins = BigNumber.sum(summaryCoins, send[i].value)
+      sum += send[i].value
       receivers.push(send[i].to)
       amounts.push(send[i].value)
 

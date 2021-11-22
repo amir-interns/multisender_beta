@@ -3,7 +3,7 @@ import { BitcoinService } from './bitcoin.service'
 import { EthereumService } from './ethereum.service'
 import {UsdtService} from './usdt.service'
 import {JwtAuthGuard} from "../auth/jwt-auth.guard";
-import {BlockchainTask} from "./tasks/tasksEth.service";
+import {BlockchainTask} from "./tasks.service";
 
 
 @Controller('blockchain')

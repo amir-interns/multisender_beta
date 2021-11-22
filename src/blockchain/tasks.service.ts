@@ -1,9 +1,6 @@
-
 import { Injectable, Inject } from "@nestjs/common";
 import { CronJob } from "cron";
 import { SchedulerRegistry } from "@nestjs/schedule";
-
-
 
 @Injectable()
 export class BlockchainTask {

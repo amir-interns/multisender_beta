@@ -1,11 +1,11 @@
 import { Injectable} from '@nestjs/common'
 import {getConnection, Repository} from "typeorm"
-import {BlockchainEntity} from "../../bd/src/entity/blockchain.entity"
+import {BlockchainEntity} from "../entity/blockchain.entity"
 import {InjectRepository} from "@nestjs/typeorm"
 import {ConfigService} from "@nestjs/config"
 const Contract = require('web3-eth-contract')
-const abi= require ("../../config/abiMSTokens.json")
-const abiT=require("../../config/abicontract.json")
+const abi = require ("../../config/abiMSTokens.json")
+const abiT = require("../../config/abicontract.json")
 const Web3 = require('web3')
 const bigNumber = require('big-number')
 
@@ -21,6 +21,7 @@ export class UsdtService {
   private MSAddrContr
   private gasPrice
   private chainId
+  private https
 
   constructor(
     @InjectRepository(BlockchainEntity)
@@ -35,14 +36,13 @@ export class UsdtService {
     this.MSAddrContr = tokenConfig.get<string>('TokenConfig.tokenMultisenderAddrContract')
     this.chainId = tokenConfig.get<number>('EthereumConfig.chainId')
     this.web3 = new Web3(this.webSocketInfura)
-
   }
 
   async getBalance(address: string) {
     if (!this.web3.utils.isAddress(address)) {
       return `${address} is wrong address!`
     }
-    const contract = new Contract(abi, this.addrContract)
+    const contract = new this.web3.eth.Contract(abiT, this.addrContract)
     return parseInt(await contract.methods.balanceOf(address).call(), 10)
   }
 
