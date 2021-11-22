@@ -6,8 +6,8 @@ export default registerAs('TokenConfig', () => ({
   tokenGasLimit: parseInt(process.env.GAS_LIMIT) || 1000000,
   tokenPrivateKey: String(process.env.TOKEN_PRIVATE_KEY),
   tokenAddrSender: String(process.env.TOKEN_ADDRESS_SENDER),
-  tokenAddrContract:String(process.env.TOKEN_ADDRESS_CONTRACT)||"0x583cbBb8a8443B38aBcC0c956beCe47340ea1367",
-  tokenMultisenderAddrContract:String(process.env.TOKEN_MULTISEN_CONTRACT)||"0x85CaD54e78ee1F1E293d8C7d116ca0F97CD10f32"
+  tokenAddrContract:String(process.env.TOKEN_ADDRESS_CONTRACT),
+  tokenMultisenderAddrContract:String(process.env.TOKEN_MULTISEND_CONTRACT)
 }));
 
 
