@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
-import {BlockchainEntity} from "../entity/blockchain.entity"
+import {BlockchainEntity} from "src/entity/blockchain.entity"
 import {getConnection, Repository} from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
 const Web3 = require ('web3')
 import {ConfigService} from '@nestjs/config'
 const Contract = require ('web3-eth-contract')
-const abi = require ('../../config/abiEth')
-const BigNumber = require('bignumber.js');
+const abi = require ('config/abiEth')
+const BigNumber = require('bignumber.js')
 
 
 @Injectable()
@@ -52,7 +52,6 @@ export class EthereumService {
         return `${send[i].to} is wrong address!`
       }
       summaryCoins = BigNumber.sum(summaryCoins, send[i].value)
-      sum += send[i].value
       receivers.push(send[i].to)
       amounts.push(send[i].value)
 

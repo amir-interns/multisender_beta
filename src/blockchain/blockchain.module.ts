@@ -4,14 +4,14 @@ import { BlockchainController } from './blockchain.controller';
 import { EthereumService } from './ethereum.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlockchainEntity } from 'src/entity/blockchain.entity'; 
-import { UsdtService } from './usdt.service';
+import { UsdtService } from 'src/blockchain/usdt.service';
 import { AuthEntity } from 'src/entity/auth.entity';
-import {AuthModule} from "../auth/auth.module";
+import {AuthModule} from "src/auth/auth.module";
 import { ConfigModule } from '@nestjs/config';
 import BitcoinConfig from 'config/bitcoin.config'
 import EthereumConfig from 'config/ether.config'
 import TokenConfig from 'config/tokensEth.config'
-import {BlockchainTask} from "./tasks.service";
+import {BlockchainTask} from "src/blockchain/tasks.service";
 
 @Module({
     imports: [TypeOrmModule.forFeature( [ BlockchainEntity, AuthEntity ]), AuthModule,

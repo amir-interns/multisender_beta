@@ -1,9 +1,9 @@
 import {Controller, Req, Get, Param, Body, forwardRef, Inject, Post, UseGuards, Query} from '@nestjs/common'
-import { BitcoinService } from './bitcoin.service'
-import { EthereumService } from './ethereum.service'
-import {UsdtService} from './usdt.service'
-import {JwtAuthGuard} from "../auth/jwt-auth.guard";
-import {BlockchainTask} from "./tasks.service";
+import { BitcoinService } from 'src/blockchain/bitcoin.service'
+import { EthereumService } from 'src/blockchain/ethereum.service'
+import {UsdtService} from 'src/blockchain/usdt.service'
+import {JwtAuthGuard} from "src/auth/jwt-auth.guard";
+import {BlockchainTask} from "src/blockchain/tasks.service";
 
 
 @Controller('blockchain')
