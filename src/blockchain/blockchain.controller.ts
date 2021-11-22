@@ -47,9 +47,5 @@ export class BlockchainController {
         return service.sendTx(params.send)
     }
 
-    @Get('CreateTrx')
-    createTrx() {
-        return this.trxService.create()
-    }
 
 }

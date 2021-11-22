@@ -1,8 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 const TronWeb = require('tronweb');
-const abi = require('../../config/trc20Abi.json')
-const abiT = require('../../config/piaTokenAbi.json')
+
 
 @Injectable()
 export class Trc20Service {
@@ -41,19 +40,18 @@ export class Trc20Service {
             receivers.push(body[i].to)
             amounts.push(body[i].value)
         }
-        
-        let contractT = await this.tronWeb.contract(abiT, this.TcontractAddress); //piaToken
-
+    
+        let contractT = await this.tronWeb.contract().at(this.TcontractAddress);
         contractT.approve(this.contractAddress, summaryCoins).send({
             feeLimit:100_000_000,
             shouldPollResponse:true
         });
+        
+        let contract = await this.tronWeb.contract().at(this.contractAddress); 
 
-        let contract = await this.tronWeb.contract(abi, this.contractAddress); 
-
-        let result = await contract.send(this.TcontractAddress, receivers,amounts).send({
+        let result = await contract.transferTokens(this.TcontractAddress, receivers,amounts).send({
             feeLimit:100_000_000,
-            shouldPollResponse:true
+            shouldPollResponse:false
         });
 
         return result

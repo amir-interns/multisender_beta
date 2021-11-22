@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 const TronWeb = require('tronweb');
-const abi = require('../../config/trxAbi.json')
+const abi = require('../../assets/trxAbi.json')
 
 @Injectable()
 export class TrxService {
@@ -37,14 +37,6 @@ export class TrxService {
           if (outputCount > 50) {
             throw new Error("Too much transactions. Max 50.");
           }
-        //Create DB obj
-        let transactionAbout = {
-            txHash: "",
-            status: "new",
-            result: {},
-            typeCoin: "trx",
-            date: new Date()
-          }
         //Check balance
         let trxToSend = 0;
         for (let i of body) {
@@ -67,21 +59,11 @@ export class TrxService {
         let result = await contract.send(receivers,amounts).send({
             feeLimit:100_000_000,
             callValue:summaryCoins,
-            shouldPollResponse:true
+            shouldPollResponse:false
         });
         return result
 
-        /*for (let i of body) {
-            console.log('value: ', this.privateKey)
-            const tradeobj = await this.tronWeb.transactionBuilder.sendTrx(i.to, i.value);
-            const signedtxn = await this.tronWeb.trx.sign(tradeobj, this.privateKey);
-            const receipt = await this.tronWeb.trx.sendRawTransaction(signedtxn);
-            return receipt
-        }*/
     }
 
-    create() {
-        return this.tronWeb.createAccount()
-    }
 
 }
