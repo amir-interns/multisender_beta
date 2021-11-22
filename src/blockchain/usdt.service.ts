@@ -4,10 +4,10 @@ import {BlockchainEntity} from "src/entity/blockchain.entity"
 import {InjectRepository} from "@nestjs/typeorm"
 import {ConfigService} from "@nestjs/config"
 const Contract = require('web3-eth-contract')
-const abi = require ("assets/abiMSTokens.json")
-const abiT = require("assets/abicontract.json")
+import *  as abiT from 'assets/abiMSTokens.json'
+import *  as abi from 'assets/abicontract.json'
 const Web3 = require('web3')
-const BigNumber = require('bignumber.js');
+const BigNumber = require('bignumber.js')
 
 
 @Injectable()
@@ -41,7 +41,7 @@ export class UsdtService {
     if (!this.web3.utils.isAddress(address)) {
       return `${address} is wrong address!`
     }
-    const contract = new this.web3.eth.Contract(abiT, this.addrContract)
+    const contract = new this.web3.eth.Contract(abi['default'], this.addrContract)
     return parseInt(await contract.methods.balanceOf(address).call(), 10)
   }
 
@@ -64,7 +64,8 @@ export class UsdtService {
     blockchainEntity.typeCoin = 'usdt'
     blockchainEntity.result = send
     const bdRecord = await this.blockchainRepository.save(blockchainEntity)
-    const contractT = new Contract(abiT, this.addrContract)
+
+    const contractT = new Contract(abi['default'], this.addrContract)
     const txT = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
@@ -73,9 +74,9 @@ export class UsdtService {
       data: await contractT.methods.approve(this.MSAddrContr, summaryCoins).encodeABI()
     };
     const signedTxT = await this.web3.eth.accounts.signTransaction(txT, this.privateKey)
-    const resultT = await this.web3.eth.sendSignedTransaction(signedTxT.rawTransaction)
+    await this.web3.eth.sendSignedTransaction(signedTxT.rawTransaction)
 
-    const contract = new Contract(abi, this.MSAddrContr)
+    const contract = new Contract(abiT['default'], this.MSAddrContr)
     const tx = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,

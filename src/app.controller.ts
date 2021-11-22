@@ -7,7 +7,8 @@ import {AuthService} from "./auth/auth.service";
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService,
-              private authService:AuthService) {}
+              private authService:AuthService
+  ) {}
 
   @ApiOperation({summary: 'Процедура аутентификации'})
   @ApiResponse({status: 200, description: 'Аутентификация' })
@@ -21,6 +22,10 @@ export class AppController {
   @Post('regist')
   async regist(@Body() req){
     return this.authService.register(req)
+  }
+
+  getHello(){
+    return this.appService.getHello()
   }
 
 }

@@ -5,8 +5,10 @@ import { SchedulerRegistry } from "@nestjs/schedule";
 @Injectable()
 export class BlockchainTask {
   private schedulerRegistry
-  constructor(@Inject('Type') private service)
+  private service
+  constructor(private serv:object)
   {
+    this.service=serv
     this.schedulerRegistry = new SchedulerRegistry()
   }
   async sendTx(send:object) {
@@ -14,7 +16,7 @@ export class BlockchainTask {
     const seconds = 10
 
     const job = new CronJob(`${seconds}  * * * * *`, async() => {
-      const res = await this.service.checkTx(hash)
+      await this.service.checkTx(hash)
       if (this.service.checkTx(hash)) {
         this.schedulerRegistry.deleteCronJob(hash)
       }

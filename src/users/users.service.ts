@@ -16,12 +16,12 @@ export class UsersService {
 
 
   async findOne(username: string): Promise<User | undefined> {
-    let user=await this.auth.findOne({where:{username}, select:["username", "password"]})
+    const user=await this.auth.findOne({where:{username}, select:["username", "password"]})
     return user
   }
 
   async create(username:string, password:string):Promise <any>{
-    let auth=new AuthEntity()
+    const auth=new AuthEntity()
     auth.username=username
     auth.password=password
     return this.auth.save(auth)

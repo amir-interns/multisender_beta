@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService} from '../users/users.service';
+import { UsersService} from 'src/users/users.service';
 import {JwtService} from "@nestjs/jwt";
 import  * as bcrypt  from 'bcrypt'
 import {getConnection} from "typeorm";
@@ -12,7 +12,7 @@ export class AuthService {
 
 
   async login(user: any) {
-    let result = await getConnection()
+    const result = await getConnection()
       .getRepository(AuthEntity)
       .createQueryBuilder('auth')
       .where('username=:user', {user:user.username})
@@ -31,7 +31,7 @@ export class AuthService {
 
   async register(user){
     const hashedPassword=await bcrypt.hash(user.password, 10)
-    let result = await getConnection()
+    const result = await getConnection()
       .getRepository(AuthEntity)
       .createQueryBuilder('auth')
       .where('username=:user', {user:user.username})
