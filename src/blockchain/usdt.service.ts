@@ -4,10 +4,10 @@ import {BlockchainEntity} from "../entity/blockchain.entity"
 import {InjectRepository} from "@nestjs/typeorm"
 import {ConfigService} from "@nestjs/config"
 const Contract = require('web3-eth-contract')
-const abi = require ("../../config/abiMSTokens.json")
-const abiT = require("../../config/abicontract.json")
+const abi = require ("../../assets/abiMSTokens.json")
+const abiT = require("../../assets/abicontract.json")
 const Web3 = require('web3')
-const bigNumber = require('big-number')
+const BigNumber = require('bignumber.js');
 
 
 @Injectable()
@@ -21,12 +21,11 @@ export class UsdtService {
   private MSAddrContr
   private gasPrice
   private chainId
-  private https
 
   constructor(
     @InjectRepository(BlockchainEntity)
-    private blockchainRepository: Repository<BlockchainEntity>,
-    private tokenConfig: ConfigService) {
+    private blockchainRepository:Repository<BlockchainEntity>,
+    private tokenConfig:ConfigService) {
     this.webSocketInfura = tokenConfig.get<string>('TokenConfig.tokenWebSocketInfura')
     this.gasPrice = tokenConfig.get<number>('EthereumConfig.gasPrice')
     this.gasLimit = tokenConfig.get<number>('TokenConfig.tokenGasLimit')
@@ -49,12 +48,12 @@ export class UsdtService {
   async sendTx(send: object) {
     const amounts = []
     const receivers = []
-    let summaryCoins = bigNumber(0)
+    let summaryCoins = BigNumber(0)
     for (let i = 0; i < Object.keys(send).length; i++) {
       if (this.web3.utils.isAddress(send[i].to) !== true) {
         return `${send[i].to} is wrong address!`
       }
-      summaryCoins += bigNumber(send[i].value)
+      summaryCoins = BigNumber.sum(summaryCoins, send[i].value)
       receivers.push(send[i].to)
       amounts.push(send[i].value)
 
@@ -93,9 +92,7 @@ export class UsdtService {
       .set({status: 'submitted', txHash: result.transactionHash, result: send, date: new Date()})
       .where({id: bdRecord.id})
       .execute();
-
     return result.transactionHash
-
   }
   async checkTx(hash) {
     const transRes = await this.web3.eth.getTransactionReceipt(hash)
