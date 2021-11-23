@@ -8,7 +8,7 @@ export class BlockchainEntity {
   id: number;
 
   @ApiProperty({example: 'ksdgjh14h21uh3412i3dli21hdilhi123', description: 'Хэш транзакции'})
-  @Column()
+  @Column({nullable: true})
   txHash: string;
 
   @ApiProperty({example: 'confirmed', description: 'Статус выполнения транзакции'})

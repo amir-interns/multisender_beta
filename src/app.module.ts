@@ -5,13 +5,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
-import  database  from 'config/database'
-import BitcoinConfig from 'config/bitcoin'
+import  database  from 'config/database.config'
+import BitcoinConfig from 'config/bitcoin.config'
 import { BlockchainEntity } from './entity/blockchain.entity'; 
-import { Auth } from './entity/Auth'; 
+import { AuthEntity } from './entity/auth.entity';
 import { AuthModule } from './auth/auth.module';
-import EthereumConfig from 'config/etherConfig'
-import TokenConfig from 'config/etherConfig'
+import EthereumConfig from 'config/ether.config'
+import TokenConfig from 'config/ether.config'
 import { LoggerMiddleware } from './utils/logger.middleware';
 
 
@@ -27,7 +27,7 @@ import { LoggerMiddleware } from './utils/logger.middleware';
                 username: configService.get<string>('database.username'),
                 password: configService.get<string>('database.password'),
                 database: configService.get<string>('database.database'),
-                entities: [BlockchainEntity, Auth],
+                entities: [BlockchainEntity, AuthEntity],
                 synchronize: configService.get<boolean>('database.synchronize'),
               }),
               inject: [ConfigService],

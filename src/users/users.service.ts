@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {getRepository, Repository} from "typeorm";
-import { Auth } from 'src/entity/Auth';
+import { AuthEntity } from 'src/entity/auth.entity';
 import {InjectRepository} from "@nestjs/typeorm";
 
 
@@ -10,8 +10,8 @@ export type User = any;
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(Auth)
-    private auth:Repository<Auth>
+    @InjectRepository(AuthEntity)
+    private auth:Repository<AuthEntity>
   ){}
 
 
@@ -21,7 +21,7 @@ export class UsersService {
   }
 
   async create(username:string, password:string):Promise <any>{
-    let auth=new Auth()
+    let auth=new AuthEntity()
     auth.username=username
     auth.password=password
     return this.auth.save(auth)
