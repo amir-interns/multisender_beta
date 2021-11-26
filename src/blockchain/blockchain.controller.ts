@@ -88,6 +88,7 @@ export class BlockchainController {
           throw new Error("Invalid request");              
         } 
       }
+      
       const task = new BlockchainTask(serviceType)
       return task.sendTx(params.send)
     }
