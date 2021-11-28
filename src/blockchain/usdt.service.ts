@@ -4,8 +4,8 @@ import {BlockchainEntity} from "src/entity/blockchain.entity"
 import {InjectRepository} from "@nestjs/typeorm"
 import {ConfigService} from "@nestjs/config"
 const Contract = require('web3-eth-contract')
-import *  as abiT from 'assets/abiMSTokens.json'
-import *  as abi from 'assets/abicontract.json'
+import *  as abiT from '@/assets/abiMSTokens.json'
+import *  as abi from '@/assets/abicontract.json'
 const Web3 = require('web3')
 const BigNumber = require('bignumber.js')
 

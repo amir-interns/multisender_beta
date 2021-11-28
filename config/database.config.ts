@@ -9,5 +9,3 @@ export default registerAs('database', () => ({
     database: process.env.DATABASE,
     synchronize: true
   }));
-              
-  

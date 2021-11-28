@@ -3,7 +3,7 @@ import { BitcoinService } from './bitcoin.service';
 import { BlockchainController } from './blockchain.controller';
 import { EthereumService } from './ethereum.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BlockchainEntity } from 'src/entity/blockchain.entity'; 
+import { BlockchainEntity } from 'src/entity/blockchain.entity';
 import { UsdtService } from 'src/blockchain/usdt.service';
 import { AuthEntity } from 'src/entity/auth.entity';
 import {AuthModule} from "src/auth/auth.module";
@@ -23,6 +23,5 @@ import { Trc20Service } from './trc20.service';
     controllers: [BlockchainController],
 })
 export class BlockchainModule {
-    
 
 }
