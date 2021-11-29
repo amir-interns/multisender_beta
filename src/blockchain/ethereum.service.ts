@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 const Web3 = require ('web3')
 import {ConfigService} from '@nestjs/config'
 const Contract = require ('web3-eth-contract')
-import *  as abi from 'assets/abiEth.json'
+import *  as abi from '@/assets/abiEth.json'
 const BigNumber = require('bignumber.js')
 
 

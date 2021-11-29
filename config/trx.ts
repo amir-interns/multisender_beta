@@ -8,5 +8,4 @@ export default registerAs('TrxConfig', () => ({
     TrxSourceAddress: process.env.TRX_SOURCE_ADDRESS,
     contractAddress: process.env.CONTRACT_ADDRESS
   }));
-              
-  
+
