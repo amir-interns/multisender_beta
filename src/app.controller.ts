@@ -1,7 +1,7 @@
 import {Body, Controller, Get, Post, UseGuards} from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
-import { AppService } from './app.service';
-import {AuthService} from "./auth/auth.service";
+import { AppService } from 'src/app.service';
+import {AuthService} from "src/auth/auth.service";
 
 @ApiTags('Основные методы')
 @Controller()

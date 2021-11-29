@@ -30,6 +30,9 @@ export class AuthService {
   }
 
   async register(user){
+    if (user.password.length <= 3){
+      return 'easy password!'
+    }
     const hashedPassword=await bcrypt.hash(user.password, 10)
     const result = await getConnection()
       .getRepository(AuthEntity)

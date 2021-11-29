@@ -12,7 +12,7 @@ import BitcoinConfig from 'config/bitcoin.config'
 import EthereumConfig from 'config/ether.config'
 import TokenConfig from 'config/tokensEth.config'
 import {BlockchainTask} from "src/blockchain/tasks.service";
-import {SchedulerRegistry} from "@nestjs/schedule";
+
 
 @Module({
     imports: [TypeOrmModule.forFeature( [ BlockchainEntity, AuthEntity ]), AuthModule,
