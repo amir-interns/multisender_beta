@@ -1,38 +1,45 @@
-import * as request from 'supertest';
-import { Test, TestingModule } from '@nestjs/testing';
+import {Test, TestingModule} from '@nestjs/testing';
 import {AppController} from '../app.controller';
 import {AuthService} from "../auth/auth.service";
 import {UsersService} from "../users/users.service";
-import {JwtModule, JwtService} from "@nestjs/jwt";
+import {JwtModule} from "@nestjs/jwt";
 import {AuthEntity} from "../entity/auth.entity";
-import {Repository} from "typeorm";
 import {TypeOrmModule} from "@nestjs/typeorm";
-import {UsersModule} from "../users/users.module";
-import {AuthModule} from "../auth/auth.module";
-import {JWT_MODULE_OPTIONS} from "@nestjs/jwt/dist/jwt.constants";
 import {PassportModule} from "@nestjs/passport";
 import {JwtStrategy} from "../auth/jwt.strategy";
-import {jwtConstants} from "../../config/constant";
+import {UsersModule} from "../users/users.module";
+import {AppModule} from "../app.module";
+import {AppService} from "../app.service";
+
 
 
 describe('Auth Contr', () => {
-  let catsController: AppController;
+  let appController: AppController;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef : TestingModule = await Test.createTestingModule({
-      imports:[ TypeOrmModule.forFeature([AuthEntity]), JwtModule, UsersModule, AuthModule, PassportModule, ],
-      controllers: [AppController],
-      providers: [AuthService, UsersService, JwtService, JwtStrategy]
+      imports:[AppModule,TypeOrmModule.forFeature([AuthEntity]),  PassportModule, UsersModule,
+        JwtModule.register({
+          secret: 'secretKey',
+          signOptions: { expiresIn: '5d' },
+        })],
+      controllers:[AppController],
+      providers:[ AuthService,  AppService, UsersService, JwtStrategy],
     }).compile();
 
-    catsController = moduleRef.get<AppController>(AppController);
+    appController = moduleRef.get<AppController>(AppController);
   });
 
-  describe('login', () => {
-    it('should return an array of cats', async () => {
-      const result = ['Wrong password or username'];
-      // jest.spyOn(AuthService, 'login',).mockImplementation(() => result);
-      expect(await catsController.login({"username":"user", "password":"use"})).toBe(result);
+  describe('Registration password length', () => {
+    it('should return error!', async () => {
+      const result = 'easy password!';
+      expect(await appController.regist({"username":"user1", "password":"us"})).toBe(result);
+    });
+  });
+  describe('Authentication token', () => {
+    it('should return token', async () => {
+      expect(await appController.login({"username":"user", "password":"user"})).
+      toMatchObject({access_token:expect.stringMatching("(.){152}")})
     });
   });
 });

@@ -50,7 +50,8 @@
     "rxjs": "^7.2.0",
     "swagger-ui-express": "^4.1.6",
     "typeorm": "^0.2.38",
-    "web3": "^1.6.0"
+    "web3": "^1.6.0",
+    "yarn": "^1.22.17"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",
@@ -86,13 +87,9 @@
     ],
     "rootDir": "",
     "moduleNameMapper": {
-      "src/auth/auth.service": "<rootDir>/src/auth/auth.service",
-      "src/auth/auth.module": "<rootDir>/src/auth/auth.module",
-      "src/users/users.service": "<rootDir>/src/users/users.service",
-      "src/users/users.module": "<rootDir>/src/users/users.module",
-      "src/entity/auth.entity": "<rootDir>/src/entity/auth.entity",
-      "config/constant": "<rootDir>/config/constant",
-      "src/auth/jwt.strategy": "<rootDir>/src/auth/jwt.strategy"
+      "src/(.*)/(.*)": "<rootDir>/src/$1/$2",
+      "assets/(.*)": "<rootDir>/assets/$1",
+      "config/(.*)": "<rootDir>/config/$1"
     },
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
