@@ -59,7 +59,7 @@ export class BlockchainController {
       }
       return await service.getBalance(address)
     }
-    @UseGuards(JwtAuthGuard)
+    //@UseGuards(JwtAuthGuard)
     @Post('sendTx')
     async sendBlockchainTx(@Body() params: any):Promise<void>{
       let serviceType: IBlockchainService
@@ -91,6 +91,11 @@ export class BlockchainController {
 
       const task = new BlockchainTask(serviceType)
       return task.sendTx(params.send)
+    }
+
+    @Post('trxCheck/:hash')
+    async getTrx(@Param('hash') hash) {
+      this.trxService.checkTx(hash)
     }
 
 }

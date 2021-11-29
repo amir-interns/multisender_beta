@@ -4,6 +4,7 @@ const TronWeb = require('tronweb');
 import {getConnection, Repository} from 'typeorm'
 import {BlockchainEntity} from "src/entity/blockchain.entity"
 import { InjectRepository } from '@nestjs/typeorm'
+const TronGrid = require('trongrid')
 
 
 
@@ -17,6 +18,7 @@ export class Trc20Service {
     public sourceAddress
     public contractAddress
     public TcontractAddress
+    public tronGrid
 
     constructor(@InjectRepository(BlockchainEntity)
                 private blockchainRepository:Repository<BlockchainEntity>,
@@ -29,6 +31,7 @@ export class Trc20Service {
         this.sourceAddress = configService.get<string>('Trc20Config.TrxSourceAddress')
         this.contractAddress = configService.get<string>('Trc20Config.contractAddress')
         this.TcontractAddress = configService.get<string>('Trc20Config.TcontractAddress')
+        this.tronGrid = new TronGrid(this.tronWeb)
     }
 
 
@@ -78,5 +81,19 @@ export class Trc20Service {
     }
 
     async checkTx(hash) {
-        return true
+        const options = {
+            Show_assets: true,
+            only_confirmed: true,
+        }
+        const res =await this.tronGrid.transaction.getEvents(hash, options)
+        if (res.success) {
+            await getConnection()
+              .createQueryBuilder()
+              .update(BlockchainEntity)
+              .set({status: 'confirmed', date: new Date()})
+              .where({txHash: hash})
+              .execute();
+            return true
+        }
+      }
 }

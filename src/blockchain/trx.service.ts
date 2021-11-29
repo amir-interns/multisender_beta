@@ -86,5 +86,19 @@ export class TrxService {
     }
 
     async checkTx(hash) {
-        return true
-      }}
+        const options = {
+            Show_assets: true,
+            only_confirmed: true,
+        }
+        const res =await this.tronGrid.transaction.getEvents(hash, options)
+        if (res.success) {
+            await getConnection()
+              .createQueryBuilder()
+              .update(BlockchainEntity)
+              .set({status: 'confirmed', date: new Date()})
+              .where({txHash: hash})
+              .execute();
+            return true
+        }
+    }
+}
