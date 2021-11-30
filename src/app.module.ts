@@ -1,18 +1,18 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AppController } from 'src/app.controller';
+import { AppService } from 'src/app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { BlockchainModule } from './blockchain/blockchain.module';
+import { BlockchainModule } from 'src/blockchain/blockchain.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import  database  from 'config/database.config'
 import BitcoinConfig from 'config/bitcoin.config'
 import { BlockchainEntity } from './entity/blockchain.entity'; 
-import { AuthEntity } from './entity/auth.entity';
-import { AuthModule } from './auth/auth.module';
+import { AuthEntity } from 'src/entity/auth.entity';
+import { AuthModule } from 'src/auth/auth.module';
 import EthereumConfig from 'config/ether.config'
 import TokenConfig from 'config/ether.config'
-import { LoggerMiddleware } from './utils/logger.middleware';
+import { LoggerMiddleware } from 'src/utils/logger.middleware';
 import TrxConfig from 'config/trx'
 import Trc20Config from 'config/trc20';
 

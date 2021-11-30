@@ -87,11 +87,15 @@
       "json",
       "ts"
     ],
-    "moduleDirectories": [
-      "node_modules",
-      "."
-    ],
-    "rootDir": "src",
+    "rootDir": "",
+    "moduleNameMapper": {
+      "src/app.controller": "<rootDir>/src/app.controller",
+      "src/app.service": "<rootDir>/src/app.service",
+      "src/app.module": "<rootDir>/src/app.module",
+      "src/(.*)/(.*)": "<rootDir>/src/$1/$2",
+      "assets/(.*)": "<rootDir>/assets/$1",
+      "config/(.*)": "<rootDir>/config/$1"
+    },
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"

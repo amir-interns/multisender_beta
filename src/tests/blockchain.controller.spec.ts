@@ -1,14 +1,16 @@
 
-import { BlockchainController } from './blockchain.controller';
-import { TrxService } from './trx.service'
-import { EthereumService } from './ethereum.service'
-import { BitcoinService } from './bitcoin.service'
-import { UsdtService } from './usdt.service'
-import { Trc20Service } from './trc20.service'
+import { BlockchainController } from '../blockchain/blockchain.controller';
+import { TrxService } from 'src/blockchain/trx.service'
+import { EthereumService } from 'src/blockchain/ethereum.service'
+import { BitcoinService } from 'src/blockchain/bitcoin.service'
+import { UsdtService } from 'src/blockchain/usdt.service'
+import { Trc20Service } from 'src/blockchain/trc20.service'
 import { Repository } from "typeorm"
 import { BlockchainEntity } from "src/entity/blockchain.entity"
 import { ConfigService } from "@nestjs/config"
 import { SchedulerRegistry } from "@nestjs/schedule";
+import {Inject} from "@nestjs/common";
+import {BlockchainTask} from "../blockchain/tasks.service";
 const axios = require("axios")
 
 describe('BlockchainController', () => {
@@ -23,13 +25,21 @@ describe('BlockchainController', () => {
   let configService: ConfigService
 
 
+
+
   beforeEach(() => {
     bitcoinService = new BitcoinService(blockchainRepository, configService)
     ethereumService = new EthereumService(blockchainRepository, configService)
     trxService = new TrxService(blockchainRepository, configService)
     trc20Service = new Trc20Service(blockchainRepository, configService)
     usdtService = new UsdtService(blockchainRepository, configService)
-    blockchainController = new BlockchainController(bitcoinService, ethereumService, usdtService, trxService, trc20Service)
+    const btcTask = new BlockchainTask(BitcoinService)
+    const ethTask = new BlockchainTask(EthereumService)
+    const usdtTask = new BlockchainTask(UsdtService)
+    const trxTask = new BlockchainTask(TrxService)
+    const trc20Task = new BlockchainTask(Trc20Service)
+    blockchainController = new BlockchainController(bitcoinService, ethereumService, usdtService, trxService, trc20Service,
+      btcTask, ethTask,usdtTask, trxTask, trc20Task )
   });
 
   describe('getBalance', () => {

@@ -8,6 +8,8 @@ import {UsdtService} from "../blockchain/usdt.service";
 import {BlockchainEntity} from "../entity/blockchain.entity";
 import {ConfigModule} from "@nestjs/config";
 import {BlockchainTask} from "../blockchain/tasks.service";
+import {TrxService} from "../blockchain/trx.service";
+import {Trc20Service} from "../blockchain/trc20.service";
 jest.setTimeout(3000000)
 
 describe('Test Blockchain API', () => {
@@ -17,7 +19,7 @@ describe('Test Blockchain API', () => {
     const moduleRef  = await Test.createTestingModule({
       imports:[AppModule,  TypeOrmModule.forFeature([BlockchainEntity]), ConfigModule],
       controllers:[BlockchainController],
-      providers:[EthereumService, BitcoinService, UsdtService,BlockchainTask, Object, {
+      providers:[EthereumService, BitcoinService, UsdtService,BlockchainTask, Object, Trc20Service, TrxService, {
         provide:'btc', useFactory: (btcSevice:BitcoinService)=>{
           return new BlockchainTask(btcSevice)
         },
@@ -34,7 +36,20 @@ describe('Test Blockchain API', () => {
             return new BlockchainTask(usdtService)
           },
           inject: [UsdtService]
-        }]
+        },
+        {
+          provide:'trx', useFactory: (trxService:TrxService)=>{
+            return new BlockchainTask(trxService)
+          },
+          inject: [TrxService]
+        },
+        {
+          provide:'trc20', useFactory: (trc20Service:Trc20Service)=>{
+            return new BlockchainTask(trc20Service)
+          },
+          inject: [Trc20Service]
+        },
+      ]
     }).compile();
 
     blockchainController = moduleRef.get<BlockchainController>(BlockchainController);

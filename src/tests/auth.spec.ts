@@ -1,15 +1,15 @@
 import {Test, TestingModule} from '@nestjs/testing';
-import {AppController} from '../app.controller';
-import {AuthService} from "../auth/auth.service";
-import {UsersService} from "../users/users.service";
+import {AppController} from 'src/app.controller';
+import {AuthService} from "src/auth/auth.service";
+import {UsersService} from "src/users/users.service";
 import {JwtModule} from "@nestjs/jwt";
-import {AuthEntity} from "../entity/auth.entity";
+import {AuthEntity} from "src/entity/auth.entity";
 import {TypeOrmModule} from "@nestjs/typeorm";
 import {PassportModule} from "@nestjs/passport";
-import {JwtStrategy} from "../auth/jwt.strategy";
-import {UsersModule} from "../users/users.module";
-import {AppModule} from "../app.module";
-import {AppService} from "../app.service";
+import {JwtStrategy} from "src/auth/jwt.strategy";
+import {UsersModule} from "src/users/users.module";
+import {AppModule} from "src/app.module";
+import {AppService} from "src/app.service";
 
 
 

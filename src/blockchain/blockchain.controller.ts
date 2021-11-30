@@ -1,12 +1,11 @@
 
-import {Controller, Req, Get, Param, Body, forwardRef, Inject, Post, UseGuards, Query} from '@nestjs/common'
-import { BitcoinService } from './bitcoin.service'
-import { EthereumService } from './ethereum.service'
-import {UsdtService} from './usdt.service'
+import {Controller, Param, Body, Inject, Post, UseGuards, } from '@nestjs/common'
+import { BitcoinService } from 'src/blockchain/bitcoin.service'
+import { EthereumService } from 'src/blockchain/ethereum.service'
+import {UsdtService} from 'src/blockchain/usdt.service'
 import {JwtAuthGuard} from "src/auth/jwt-auth.guard";
-import {BlockchainTask} from "./tasks.service";
-import { TrxService } from './trx.service'
-import { Trc20Service } from './trc20.service'
+import { TrxService } from 'src/blockchain/trx.service'
+import { Trc20Service } from 'src/blockchain/trc20.service'
 
 interface IBlockchainService {
   sendTx(body: object): object;
@@ -65,7 +64,7 @@ export class BlockchainController {
     }
     return await service.getBalance(address)
   }
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('sendTx')
   async sendBlockchainTx(@Body() params: any):Promise<any>{
     let task: IBlockchainService
@@ -96,11 +95,5 @@ export class BlockchainController {
     }
     return task.sendTx(params.send)
   }
-
-  @Post('trxCheck/:hash')
-  async getTrx(@Param('hash') hash) {
-    this.trxService.checkTx(hash)
-  }
-
 }
 

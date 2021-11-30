@@ -3,9 +3,6 @@ import { BlockchainEntity } from "src/entity/blockchain.entity";
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from "typeorm";
 import { BlockchainDto } from "src/blockchain/dto/blockchain.dto";
-import { SchedulerRegistry } from "@nestjs/schedule";
-import { CronJob } from "cron";
-import { getConnection } from "typeorm";
 import { ConfigService } from "@nestjs/config";
 const axios = require("axios")
 const bitcore = require("bitcore-lib")
