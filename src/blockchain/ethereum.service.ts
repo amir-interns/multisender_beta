@@ -46,7 +46,6 @@ export class EthereumService {
     const amounts = []
     const receivers = []
     let summaryCoins = BigNumber(0)
-    let sum = 0
     for (let i = 0; i < Object.keys(send).length; i++) {
       if (this.web3.utils.isAddress(send[i].to) !== true) {
         return `${send[i].to} is wrong address!`

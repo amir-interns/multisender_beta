@@ -74,7 +74,7 @@ export class UsdtService {
       data: await contractT.methods.approve(this.MSAddrContr, summaryCoins).encodeABI()
     };
     const signedTxT = await this.web3.eth.accounts.signTransaction(txT, this.privateKey)
-    const resultT = await this.web3.eth.sendSignedTransaction(signedTxT.rawTransaction)
+    await this.web3.eth.sendSignedTransaction(signedTxT.rawTransaction)
 
     const contract = new Contract(abiT['default'], this.MSAddrContr)
     const tx = {
