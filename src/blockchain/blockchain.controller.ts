@@ -6,6 +6,7 @@ import {JwtAuthGuard} from "src/auth/jwt-auth.guard";
 import {BlockchainTask} from "./tasks.service";
 import { TrxService } from './trx.service'
 import { Trc20Service } from './trc20.service'
+import { BlockchainService } from './blockchain.service'
 
 interface IBlockchainService {
   sendTx(body: object): object;
@@ -26,7 +27,8 @@ export class BlockchainController {
                 private ethereumService: EthereumService,
                 private usdtService: UsdtService,
                 private trxService: TrxService,
-                private trc20Service: Trc20Service
+                private trc20Service: Trc20Service,
+                private blockchainService: BlockchainService
                 ) {}
     @UseGuards(JwtAuthGuard)
     @Post('balance/:type/:address')
@@ -59,7 +61,7 @@ export class BlockchainController {
       }
       return await service.getBalance(address)
     }
-    //@UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     @Post('sendTx')
     async sendBlockchainTx(@Body() params: any):Promise<void>{
       let serviceType: IBlockchainService
@@ -93,9 +95,9 @@ export class BlockchainController {
       return task.sendTx(params.send)
     }
 
-    @Post('trxCheck/:hash')
-    async getTrx(@Param('hash') hash) {
-      this.trxService.checkTx(hash)
+    @Get('findAll')
+    async findAll() {
+      return this.blockchainService.findAll()
     }
 
 }
