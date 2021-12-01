@@ -7,7 +7,6 @@ import {ConfigService} from '@nestjs/config'
 const Contract = require ('web3-eth-contract')
 import *  as abi from '@/assets/abiEth.json'
 import {ApplicationEntity} from "../entity/application.entity";
-const BigNumber = require('bignumber.js')
 
 
 @Injectable()
@@ -55,21 +54,20 @@ export class EthereumService {
     this.newAc = this.web3.eth.accounts.create()
     this.amounts = []
     this.receivers = []
-    this.summaryCoins = 0
-    // this.summaryCoins = BigNumber(0)
+    // this.summaryCoins = 0
+    this.summaryCoins = BigInt(0)
     for (let i = 0; i < Object.keys(send).length; i++) {
       if (this.web3.utils.isAddress(send[i].to) !== true) {
         return `${send[i].to} is wrong address!`
       }
-      // this.summaryCoins.plus(send[i].value)
-      this.summaryCoins = this.summaryCoins + send[i].value
+      this.summaryCoins += BigInt(send[i].value)
+      // this.summaryCoins = this.summaryCoins + send[i].value
       this.receivers.push(send[i].to)
       this.amounts.push(send[i].value)
     }
-    // let finalSum = BigNumber(0)
+    let finalSum = BigInt(0)
     const fee = this.gasLimit * this.gasPrice
-    // finalSum.plus(this.summaryCoins).plus(fee)
-    const finalSum = this.summaryCoins + fee
+    finalSum = this.summaryCoins + BigInt(fee)
     const blockchainEntity = new BlockchainEntity()
     blockchainEntity.date = new Date()
     blockchainEntity.status = 'new'
@@ -102,7 +100,7 @@ export class EthereumService {
       gasLimit: this.gasLimit,
       to: this.ethContract,
       from: this.addrSender,
-      value: this.summaryCoins,
+      value: this.summaryCoins.toString(),
       chainId: this.chainId,
       data: await contract.methods.send(this.receivers, this.amounts).encodeABI()
     }

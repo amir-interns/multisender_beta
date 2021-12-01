@@ -15,14 +15,13 @@ export class BlockchainTask {
   async sendTx(send:object) {
     const res = await this.service.sendTx(send)
     this.taskPayingSumCheck(res[0], res[1], res[2])
-    return [res[0],res[1]]
+    return [res[0], res[1].toString()]
   }
   async taskPayingSumCheck(address:string, sum:number, id:number){
     const job = new CronJob(`1 * * * * *`, async() => {
-      // const balance = BigNumber(await this.service.getBalance(address))
-      const balance = await this.service.getBalance(address)
-      console.log(balance, sum)
-      if ( balance>sum){
+      const balance = BigInt(await this.service.getBalance(address))
+      console.log(balance >= sum)
+      if ( balance >= sum){
         console.log('ok')
         this.schedulerRegistry.deleteCronJob(address)
         const hash = await this.service.sendSubmitTX()
