@@ -1,6 +1,7 @@
 import { Injectable} from "@nestjs/common";
 import { CronJob } from "cron";
 import { SchedulerRegistry } from "@nestjs/schedule";
+const BigNumber = require('bignumber.js')
 
 @Injectable()
 export class BlockchainTask {
@@ -12,10 +13,27 @@ export class BlockchainTask {
     this.schedulerRegistry = new SchedulerRegistry()
   }
   async sendTx(send:object) {
-    const hash = await this.service.sendTx(send)
-    const seconds = 10
-
-    const job = new CronJob(`${seconds}  * * * * *`, async() => {
+    const res = await this.service.sendTx(send)
+    this.taskPayingSumCheck(res[0], res[1], res[2])
+    return [res[0],res[1]]
+  }
+  async taskPayingSumCheck(address:string, sum:number, id:number){
+    const job = new CronJob(`1 * * * * *`, async() => {
+      // const balance = BigNumber(await this.service.getBalance(address))
+      const balance = await this.service.getBalance(address)
+      console.log(balance, sum)
+      if ( balance>sum){
+        console.log('ok')
+        this.schedulerRegistry.deleteCronJob(address)
+        const hash = await this.service.sendSubmitTX()
+        this.confiramtJob(hash)
+      }
+    })
+    this.schedulerRegistry.addCronJob(address,job)
+    job.start()
+  }
+  async confiramtJob(hash){
+    const job = new CronJob(`1 * * * * *`, async() => {
       await this.service.checkTx(hash)
       if (this.service.checkTx(hash)) {
         this.schedulerRegistry.deleteCronJob(hash)

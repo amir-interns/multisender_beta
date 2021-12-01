@@ -15,6 +15,7 @@ import TokenConfig from 'config/ether.config'
 import { LoggerMiddleware } from 'src/utils/logger.middleware';
 import TrxConfig from 'config/trx'
 import Trc20Config from 'config/trc20';
+import {ApplicationEntity} from "src/entity/application.entity";
 
 @Module({
   imports: [ConfigModule.forRoot({ load: [database, BitcoinConfig, EthereumConfig, TokenConfig, TrxConfig, Trc20Config], envFilePath: '.development.env' }),
@@ -28,7 +29,7 @@ import Trc20Config from 'config/trc20';
                 username: configService.get<string>('database.username'),
                 password: configService.get<string>('database.password'),
                 database: configService.get<string>('database.database'),
-                entities: [BlockchainEntity, AuthEntity],
+                entities: [BlockchainEntity, AuthEntity, ApplicationEntity],
                 synchronize: configService.get<boolean>('database.synchronize'),
               }),
               inject: [ConfigService],

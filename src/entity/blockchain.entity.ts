@@ -24,6 +24,7 @@ export class BlockchainEntity {
   @Column()
   typeCoin: string;
 
+
   @ApiProperty({example: '10.00', description: 'Время в которое была сделана транзакция'})
   @Column()
   date: Date;

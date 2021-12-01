@@ -14,9 +14,10 @@ import TokenConfig from 'config/tokensEth.config'
 import {BlockchainTask} from "src/blockchain/tasks.service";
 import { TrxService } from 'src/blockchain/trx.service';
 import { Trc20Service } from 'src/blockchain/trc20.service';
+import {ApplicationEntity} from "../entity/application.entity";
 
 @Module({
-    imports: [TypeOrmModule.forFeature( [ BlockchainEntity, AuthEntity ]), AuthModule,
+    imports: [TypeOrmModule.forFeature( [ BlockchainEntity, AuthEntity, ApplicationEntity]), AuthModule,
         ConfigModule.forFeature(BitcoinConfig), ConfigModule.forFeature(TokenConfig),
         ConfigModule.forFeature(EthereumConfig)],
     providers: [ BitcoinService, EthereumService, UsdtService, BlockchainTask, TrxService, Trc20Service,
