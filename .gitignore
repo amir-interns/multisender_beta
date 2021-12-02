@@ -1,3 +1,4 @@
 node_modules
 dist
 .development.env
+ms-client/node_modules
