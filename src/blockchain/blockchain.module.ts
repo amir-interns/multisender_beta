@@ -1,7 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { BitcoinService } from './bitcoin.service';
-import { BlockchainController } from './blockchain.controller';
-import { EthereumService } from './ethereum.service';
+import { BitcoinService } from 'src/blockchain/bitcoin.service';
+import { BlockchainController } from 'src/blockchain/blockchain.controller';
+import { EthereumService } from 'src/blockchain/ethereum.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlockchainEntity } from 'src/entity/blockchain.entity';
 import { UsdtService } from 'src/blockchain/usdt.service';
@@ -12,14 +12,46 @@ import BitcoinConfig from 'config/bitcoin.config'
 import EthereumConfig from 'config/ether.config'
 import TokenConfig from 'config/tokensEth.config'
 import {BlockchainTask} from "src/blockchain/tasks.service";
-import { TrxService } from './trx.service';
-import { Trc20Service } from './trc20.service';
+import { TrxService } from 'src/blockchain/trx.service';
+import { Trc20Service } from 'src/blockchain/trc20.service';
 
 @Module({
     imports: [TypeOrmModule.forFeature( [ BlockchainEntity, AuthEntity ]), AuthModule,
         ConfigModule.forFeature(BitcoinConfig), ConfigModule.forFeature(TokenConfig),
         ConfigModule.forFeature(EthereumConfig)],
-    providers: [ BitcoinService, EthereumService, UsdtService, BlockchainTask, {provide:'Type', useValue:''}, TrxService, Trc20Service],
+    providers: [ BitcoinService, EthereumService, UsdtService, BlockchainTask, TrxService, Trc20Service,
+        Object,
+        {
+            provide:'btc', useFactory: (btcSevice:BitcoinService)=>{
+                return new BlockchainTask(btcSevice)
+            },
+            inject: [BitcoinService, BlockchainTask]
+        },
+        {
+            provide:'eth', useFactory: async (ethService:EthereumService)=>{
+                return new BlockchainTask(ethService)
+            },
+            inject: [EthereumService]
+        },
+        {
+            provide:'usdt', useFactory: (usdtService:UsdtService)=>{
+                return new BlockchainTask(usdtService)
+            },
+            inject: [UsdtService]
+        },
+        {
+            provide:'trx', useFactory: (trxService:TrxService)=>{
+                return new BlockchainTask(trxService)
+            },
+            inject: [TrxService]
+        },
+        {
+            provide:'trc20', useFactory: (trc20Service:Trc20Service)=>{
+                return new BlockchainTask(trc20Service)
+            },
+            inject: [Trc20Service]
+        },
+    ],
     controllers: [BlockchainController],
 })
 export class BlockchainModule {
