@@ -6,8 +6,8 @@ const Web3 = require ('web3')
 import {ConfigService} from '@nestjs/config'
 const Contract = require ('web3-eth-contract')
 import *  as abi from '@/assets/abiEth.json'
-const BigNumber = require('bignumber.js')
-
+import {ApplicationEntity} from "src/entity/application.entity";
+// const ws = new Web3("wss://ropsten.infura.io/ws/v3/672b38a3e2d746f5bd5f24396cb048e9")
 
 @Injectable()
 export class EthereumService {
@@ -16,13 +16,20 @@ export class EthereumService {
   private chainId
   private privateKey
   private addrSender
-  private web3
   private ethContract
   private ws
-
+  private summaryCoins
+  private receivers
+  private amounts
+  private send
+  private bdRecord
+  private newAc
+  private web3
   constructor(
     @InjectRepository(BlockchainEntity)
     private blockchainRepository:Repository<BlockchainEntity>,
+    @InjectRepository(ApplicationEntity)
+    private applicationRepository:Repository<ApplicationEntity>,
     private ethconfig:ConfigService,
   ) {
     this.gasPrice = ethconfig.get<number>('EthereumConfig.gasPrice')
@@ -39,53 +46,68 @@ export class EthereumService {
     if (! this.web3.utils.isAddress(address)){
       return `${address} is wrong address!`
     }
-    return parseInt(await this.web3.eth.getBalance(this.addrSender), 10)
+    return parseInt(await this.web3.eth.getBalance(address), 10)
   }
 
   async sendTx(send: object): Promise<any> {
-    const amounts = []
-    const receivers = []
-    let summaryCoins = BigNumber(0)
+    this.send = send
+    this.newAc = this.web3.eth.accounts.create()
+    this.amounts = []
+    this.receivers = []
+    this.summaryCoins = BigInt(0)
     for (let i = 0; i < Object.keys(send).length; i++) {
       if (this.web3.utils.isAddress(send[i].to) !== true) {
         return `${send[i].to} is wrong address!`
       }
-      summaryCoins = BigNumber.sum(summaryCoins, send[i].value)
-      receivers.push(send[i].to)
-      amounts.push(send[i].value)
-
+      this.summaryCoins += BigInt(send[i].value)
+      this.receivers.push(send[i].to)
+      this.amounts.push(send[i].value)
     }
+    let finalSum = BigInt(0)
+    const fee = this.gasLimit * this.gasPrice
+    finalSum = this.summaryCoins + BigInt(fee)
     const blockchainEntity = new BlockchainEntity()
     blockchainEntity.date = new Date()
     blockchainEntity.status = 'new'
     blockchainEntity.typeCoin = 'eth'
     blockchainEntity.result = send
-    const bdRecord = await this.blockchainRepository.save(blockchainEntity)
-    const contract =  new Contract(abi['default'], this.ethContract)
-    const rawTx = {
+    this.bdRecord = await this.blockchainRepository.save(blockchainEntity)
+
+    const applicationEntity = new ApplicationEntity()
+    applicationEntity.date = new Date()
+    applicationEntity.address = this.newAc.address
+    applicationEntity.finalSum = String(finalSum)
+    applicationEntity.idBlEnt = this.bdRecord.id
+    await this.applicationRepository.save(applicationEntity)
+    return [this.newAc.address, finalSum, this.bdRecord.id]
+  }
+    async sendSubmitTX(){
+    const contract = new Contract(abi['default'], this.ethContract)
+    const newAcBal = await this.web3.eth.getBalance(this.newAc.address)
+    const val = newAcBal - (this.gasLimit * this.gasPrice)
+    const rawTr = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
       to: this.ethContract,
-      from: this.addrSender,
-      value: summaryCoins,
+      from: this.newAc.address,
+      value: val,
       chainId: this.chainId,
-      data: await contract.methods.send(receivers, amounts).encodeABI()
+      data: contract.methods.send(this.receivers, this.amounts).encodeABI()
     }
-
-    const signedTx=await this.web3.eth.accounts.signTransaction(rawTx, this.privateKey)
-    const result=await this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+    const signedTr=await this.web3.eth.accounts.signTransaction(rawTr, this.newAc.privateKey)
+    const result = await this.web3.eth.sendSignedTransaction(signedTr.rawTransaction)
     await getConnection()
       .createQueryBuilder()
       .update(BlockchainEntity)
-      .set({ status:'submitted', txHash:result.transactionHash, result:send, date:new Date()})
-      .where({id:bdRecord.id})
+      .set({ status:'submitted', txHash:result.transactionHash, result:this.send, date:new Date()})
+      .where({id:this.bdRecord.id})
       .execute();
     return result.transactionHash
   }
 
   async checkTx(hash) {
     const transRes = await this.web3.eth.getTransactionReceipt(hash)
-    if (parseInt(transRes.blockNumber, 10) >= 3) {
+    if (await this.web3.eth.getBlockNumber() - transRes.blockNumber >= 3) {
       await getConnection()
         .createQueryBuilder()
         .update(BlockchainEntity)
@@ -94,6 +116,17 @@ export class EthereumService {
         .execute();
       return true
     }
+    return false
+  }
+
+  async delApplication(id){
+    await getConnection()
+      .createQueryBuilder()
+      .delete()
+      .from(ApplicationEntity)
+      .where({idBlEnt:id})
+      .execute();
+    return true
   }
 }
 
