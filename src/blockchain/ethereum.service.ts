@@ -7,7 +7,7 @@ import {ConfigService} from '@nestjs/config'
 const Contract = require ('web3-eth-contract')
 import *  as abi from '@/assets/abiEth.json'
 import {ApplicationEntity} from "src/entity/application.entity";
-
+// const ws = new Web3("wss://ropsten.infura.io/ws/v3/672b38a3e2d746f5bd5f24396cb048e9")
 
 @Injectable()
 export class EthereumService {
@@ -82,30 +82,20 @@ export class EthereumService {
     return [this.newAc.address, finalSum, this.bdRecord.id]
   }
     async sendSubmitTX(){
+    const contract = new Contract(abi['default'], this.ethContract)
     const newAcBal = await this.web3.eth.getBalance(this.newAc.address)
     const val = newAcBal - (this.gasLimit * this.gasPrice)
     const rawTr = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
-      to: this.addrSender,
+      to: this.ethContract,
       from: this.newAc.address,
       value: val,
       chainId: this.chainId,
+      data: contract.methods.send(this.receivers, this.amounts).encodeABI()
     }
     const signedTr=await this.web3.eth.accounts.signTransaction(rawTr, this.newAc.privateKey)
-    await this.web3.eth.sendSignedTransaction(signedTr.rawTransaction)
-    const contract = new Contract(abi['default'], this.ethContract)
-    const rawTx = {
-      gasPrice: this.gasPrice,
-      gasLimit: this.gasLimit,
-      to: this.ethContract,
-      from: this.addrSender,
-      value: this.summaryCoins.toString(),
-      chainId: this.chainId,
-      data: await contract.methods.send(this.receivers, this.amounts).encodeABI()
-    }
-    const signedTx=await this.web3.eth.accounts.signTransaction(rawTx, this.privateKey)
-    const result=await this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+    const result = await this.web3.eth.sendSignedTransaction(signedTr.rawTransaction)
     await getConnection()
       .createQueryBuilder()
       .update(BlockchainEntity)

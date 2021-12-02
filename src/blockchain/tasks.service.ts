@@ -1,7 +1,6 @@
 import { Injectable} from "@nestjs/common";
 import { CronJob } from "cron";
 import { SchedulerRegistry } from "@nestjs/schedule";
-const BigNumber = require('bignumber.js')
 
 
 @Injectable()
