@@ -1,11 +1,13 @@
 
-import {Controller, Param, Body, Inject, Post, UseGuards, } from '@nestjs/common'
+import {Controller, Param, Body, Inject, Post, UseGuards, Get} from '@nestjs/common'
 import { BitcoinService } from 'src/blockchain/bitcoin.service'
 import { EthereumService } from 'src/blockchain/ethereum.service'
 import {UsdtService} from 'src/blockchain/usdt.service'
 import {JwtAuthGuard} from "src/auth/jwt-auth.guard";
 import { TrxService } from 'src/blockchain/trx.service'
 import { Trc20Service } from 'src/blockchain/trc20.service'
+import { BlockchainService } from 'src/blockchain/blockchain.service'
+
 
 interface IBlockchainService {
   sendTx(body: object): object;
@@ -27,6 +29,7 @@ export class BlockchainController {
               private usdtService: UsdtService,
               private trxService: TrxService,
               private trc20Service: Trc20Service,
+              private blockchainService: BlockchainService,
               @Inject('btc') private btcTask,
               @Inject('eth') private ethTask,
               @Inject('usdt') private usdtTask,
@@ -94,6 +97,10 @@ export class BlockchainController {
       }
     }
     return task.sendTx(params.send)
+  }
+  @Get('findAll')
+  async findAll() {
+    return this.blockchainService.findAll()
   }
 }
 
