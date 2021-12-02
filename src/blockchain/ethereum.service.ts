@@ -54,14 +54,12 @@ export class EthereumService {
     this.newAc = this.web3.eth.accounts.create()
     this.amounts = []
     this.receivers = []
-    // this.summaryCoins = 0
     this.summaryCoins = BigInt(0)
     for (let i = 0; i < Object.keys(send).length; i++) {
       if (this.web3.utils.isAddress(send[i].to) !== true) {
         return `${send[i].to} is wrong address!`
       }
       this.summaryCoins += BigInt(send[i].value)
-      // this.summaryCoins = this.summaryCoins + send[i].value
       this.receivers.push(send[i].to)
       this.amounts.push(send[i].value)
     }
@@ -74,6 +72,7 @@ export class EthereumService {
     blockchainEntity.typeCoin = 'eth'
     blockchainEntity.result = send
     this.bdRecord = await this.blockchainRepository.save(blockchainEntity)
+
     const applicationEntity = new ApplicationEntity()
     applicationEntity.date = new Date()
     applicationEntity.address = this.newAc.address
@@ -126,6 +125,15 @@ export class EthereumService {
         .execute();
       return true
     }
+  }
+  async delApplication(id){
+    await getConnection()
+      .createQueryBuilder()
+      .delete()
+      .from(ApplicationEntity)
+      .where({idBlEnt:id})
+      .execute();
+    return true
   }
 }
 
