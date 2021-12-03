@@ -102,5 +102,9 @@ export class BlockchainController {
   async findAll() {
     return this.blockchainService.findAll()
   }
+  @Post('console')
+  async consFn(@Body() params: any) {
+    console.log(params)
+  }
 }
 

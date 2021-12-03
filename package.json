@@ -21,7 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "start:dev": "npm run copy:assets && npm run start:dev1",
     "copy:assets": "cpx 'assets/*.json' 'dist/assets/'",
-    "server": "nodemon start:dev",
+    "server": "nodemon start:dev --delay 1",
     "client": "npm run start --prefix ms-client",
     "dev": "concurrently \"npm run server\" \"npm run client\""
   },
@@ -44,7 +44,7 @@
     "cpx": "^1.5.0",
     "dotenv": "^10.0.0",
     "json": "^11.0.0",
-    "nodemon": "^2.0.15",
+    "nodemon": "1.19.0",
     "passport": "^0.5.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",

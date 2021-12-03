@@ -1,48 +1,29 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useHttp } from '../hooks/http.hook';
 
 export const CreateTransaction = () => {
-
-  const [inputList, setInputList] = useState([{ address: "", value: "" }]);
+  const [value, setValue] = useState();
   const {request} = useHttp()
-  // handle input change
-  const handleInputChange = (e, index) => {
-    const { name, value } = e.target;
-    const list = [...inputList];
-    list[index][name] = value;
-    setInputList(list);
-  };
 
-  // handle click event of the Remove button
-  const handleRemoveClick = index => {
-    const list = [...inputList];
-    list.splice(index, 1);
-    setInputList(list);
-  };
-
-  // handle click event of the Add button
-  const handleAddClick = () => {
-    setInputList([...inputList, { address: "", value: "" }]);
-  };
-
-  document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('select');
-    var instances = window.M.FormSelect.init(elems);
-  });
+  const handleOnSubmit = async (event) => {
+    const type = event.target.select.value
+    const send = [value]
+    const fetched = await request('/blockchain/console', 'POST', {type, send})
+  }
 
   useEffect(() => {
-    window.M.updateTextFields()
+    window.M.AutoInit();
   }, [])
 
-  const handleOnSubmit = async () => {
-    const fetched = await request('/blockchain/console', 'POST', {inputList})
+  const handleOnChange = (event) => {
+    setValue(event.target.value)
   }
 
   return (
     <div>
-      <form className="col s12" onSubmit={() => handleOnSubmit()}>
+      <form className="col s12" onSubmit={(event) => handleOnSubmit(event)}>
         <div className="input-field col s12">
-          <select>
+          <select name="select">
             <option value="" disabled selected>Выберите валюту</option>
             <option value="btc">Bitcoin</option>
             <option value="eth">Ethereum</option>
@@ -52,36 +33,16 @@ export const CreateTransaction = () => {
           </select>
           <label>Выбранная валюта</label>
         </div>
-      {inputList.map((x, i) => {
-        return (
-          <div className="container">
+        <div className="container">
+          <form className="col s12">
             <div className="row">
-              
-                  <div className="input-field col s6">
-                    <i className="material-icons prefix">account_balance_wallet</i>
-                    <input name="address" id="icon_prefix" type="text" className="validate" value={x.address} onChange={e => handleInputChange(e, i)}/>
-                    <label htmlFor="icon_prefix">Address</label>
-                  </div>
-                  <div className="input-field col s6">
-                    <i className="material-icons prefix">attach_money</i>
-                    <input name="value" id="icon_telephone" type="text" className="validate" value={x.value} onChange={e => handleInputChange(e, i)}/>
-                    <label htmlFor="icon_telephone">value</label>
-                  </div>
-                  <div className="btn-box">
-                    {inputList.length !== 1 && <button
-                      className="btn-floating btn-large waves-effect waves-light purple lighten-3"
-                      onClick={() => handleRemoveClick(i)}><i 
-                      className="material-icons">remove</i></button>}
-                    {inputList.length - 1 === i && <button 
-                      className="btn-floating btn-large waves-effect waves-light purple lighten-3" 
-                      onClick={handleAddClick}><i 
-                      className="material-icons">add</i></button>}
-                  </div>
-              
+              <div className="input-field col s12">
+                <textarea id="textarea1" name="textarea" className="materialize-textarea" value={value} onChange={event => handleOnChange(event)}></textarea>
+                <label htmlFor="textarea1">Введите запрос</label>
+              </div>
             </div>
-          </div> 
-        )
-      })}
+          </form>
+        </div>
       <button className="btn waves-effect waves-light deep-purple lighten-1" type="submit" name="action">Send
       <i className="material-icons right">send</i>
       </button>
