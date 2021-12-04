@@ -7,8 +7,17 @@ export const CreateTransaction = () => {
 
   const handleOnSubmit = async (event) => {
     const type = event.target.select.value
-    const send = [value]
-    const fetched = await request('/blockchain/console', 'POST', {type, send})
+    const data = value
+    const addresses = data.match(/\w{32,}\b/ug)
+    const values = data.match(/\b[\d.]{1,}\b/ug)
+    let tmp = { to: "", value: "" }
+    let send = []
+    for (let i = 0; i < addresses.length; i++) {
+      tmp.to = addresses[i]
+      tmp.value = values[i]
+      send.push(tmp)
+    }
+    const fetched = await request('/blockchain/sendTx', 'POST', {type, send})
   }
 
   useEffect(() => {
