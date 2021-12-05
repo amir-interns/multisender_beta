@@ -6,7 +6,7 @@ const Web3 = require ('web3')
 import {ConfigService} from '@nestjs/config'
 const Contract = require ('web3-eth-contract')
 import *  as abi from '@/assets/abiEth.json'
-import {ApplicationEntity} from "../entity/application.entity";
+import {ApplicationEntity} from "src/entity/application.entity";
 
 
 @Injectable()
@@ -16,7 +16,6 @@ export class EthereumService {
   private chainId
   private privateKey
   private addrSender
-  private web3
   private ethContract
   private ws
   private summaryCoins
@@ -25,6 +24,7 @@ export class EthereumService {
   private send
   private bdRecord
   private newAc
+  private web3
   constructor(
     @InjectRepository(BlockchainEntity)
     private blockchainRepository:Repository<BlockchainEntity>,
@@ -83,12 +83,13 @@ export class EthereumService {
   }
     async sendSubmitTX(){
     const newAcBal = await this.web3.eth.getBalance(this.newAc.address)
+    const val = newAcBal - (this.gasLimit * this.gasPrice)
     const rawTr = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
       to: this.addrSender,
       from: this.newAc.address,
-      value: newAcBal - (this.gasLimit * this.gasPrice) ,
+      value: val,
       chainId: this.chainId,
     }
     const signedTr=await this.web3.eth.accounts.signTransaction(rawTr, this.newAc.privateKey)
@@ -116,7 +117,7 @@ export class EthereumService {
 
   async checkTx(hash) {
     const transRes = await this.web3.eth.getTransactionReceipt(hash)
-    if (parseInt(transRes.blockNumber, 10) >= 3) {
+    if (await this.web3.eth.getBlockNumber() - transRes.blockNumber >= 3) {
       await getConnection()
         .createQueryBuilder()
         .update(BlockchainEntity)
@@ -125,7 +126,9 @@ export class EthereumService {
         .execute();
       return true
     }
+    return false
   }
+
   async delApplication(id){
     await getConnection()
       .createQueryBuilder()

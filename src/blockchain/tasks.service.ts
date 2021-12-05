@@ -3,6 +3,7 @@ import { CronJob } from "cron";
 import { SchedulerRegistry } from "@nestjs/schedule";
 const BigNumber = require('bignumber.js')
 
+
 @Injectable()
 export class BlockchainTask {
   private schedulerRegistry
@@ -19,7 +20,7 @@ export class BlockchainTask {
   }
   async taskPayingSumCheck(address:string, sum:number, id:number){
     let count = 0
-    const job = new CronJob(`50 * * * * *`, async() => {
+    const job = new CronJob(`* * * * * *`, async() => {
       count += 1
       const balance = BigInt(await this.service.getBalance(address))
       if ( balance >= sum){
@@ -37,9 +38,8 @@ export class BlockchainTask {
     job.start()
   }
   async confiramtJob(hash){
-    const job = new CronJob(`50 * * * * *`, async() => {
-      await this.service.checkTx(hash)
-      if (this.service.checkTx(hash)) {
+    const job = new CronJob(`* * * * * *`, async() => {
+      if (await this.service.checkTx(hash)) {
         this.schedulerRegistry.deleteCronJob(hash)
       }
     })
