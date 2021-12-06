@@ -14,20 +14,23 @@ import TokenConfig from 'config/tokensEth.config'
 import {BlockchainTask} from "src/blockchain/tasks.service";
 import { TrxService } from 'src/blockchain/trx.service';
 import { Trc20Service } from 'src/blockchain/trc20.service';
-import {ApplicationEntity} from "src/entity/application.entity";
+import {RequestEntity} from "src/entity/request.entity";
+import {QueueService} from "src/queue/queue.service";
+import {QueueTask} from "../queue/queue.task";
+import {QueueModule} from "../queue/queue.module";
 
 
 @Module({
-    imports: [TypeOrmModule.forFeature( [ BlockchainEntity, AuthEntity, ApplicationEntity]), AuthModule,
+    imports: [TypeOrmModule.forFeature( [ BlockchainEntity, AuthEntity, RequestEntity]), AuthModule,
         ConfigModule.forFeature(BitcoinConfig), ConfigModule.forFeature(TokenConfig),
         ConfigModule.forFeature(EthereumConfig)],
-    providers: [ BitcoinService, EthereumService, UsdtService, BlockchainTask, TrxService, Trc20Service,
-        Object,
+    providers: [ BitcoinService, EthereumService, UsdtService, BlockchainTask, TrxService, Trc20Service,Object,
+      QueueTask, QueueService,
         {
             provide:'btc', useFactory: (btcSevice:BitcoinService)=>{
                 return new BlockchainTask(btcSevice)
             },
-            inject: [BitcoinService, BlockchainTask]
+            inject: [BitcoinService]
         },
         {
             provide:'eth', useFactory: async (ethService:EthereumService)=>{
@@ -55,6 +58,7 @@ import {ApplicationEntity} from "src/entity/application.entity";
         },
     ],
     controllers: [BlockchainController],
+    exports:[]
 })
 export class BlockchainModule {
 

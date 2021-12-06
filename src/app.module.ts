@@ -15,7 +15,8 @@ import TokenConfig from 'config/ether.config'
 import { LoggerMiddleware } from 'src/utils/logger.middleware';
 import TrxConfig from 'config/trx'
 import Trc20Config from 'config/trc20';
-import {ApplicationEntity} from "src/entity/application.entity";
+import {RequestEntity} from "src/entity/request.entity";
+import {QueueModule} from "./queue/queue.module";
 
 @Module({
   imports: [ConfigModule.forRoot({ load: [database, BitcoinConfig, EthereumConfig, TokenConfig, TrxConfig, Trc20Config], envFilePath: '.development.env' }),
@@ -29,13 +30,13 @@ import {ApplicationEntity} from "src/entity/application.entity";
                 username: configService.get<string>('database.username'),
                 password: configService.get<string>('database.password'),
                 database: configService.get<string>('database.database'),
-                entities: [BlockchainEntity, AuthEntity, ApplicationEntity],
+                entities: [BlockchainEntity, AuthEntity, RequestEntity],
                 synchronize: configService.get<boolean>('database.synchronize'),
               }),
               inject: [ConfigService],
             }),
             ScheduleModule.forRoot(),
-            AuthModule,BlockchainModule
+            AuthModule,BlockchainModule, QueueModule
             ],
 
   controllers: [AppController],

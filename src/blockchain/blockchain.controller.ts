@@ -6,6 +6,7 @@ import {UsdtService} from 'src/blockchain/usdt.service'
 import {JwtAuthGuard} from "src/auth/jwt-auth.guard";
 import { TrxService } from 'src/blockchain/trx.service'
 import { Trc20Service } from 'src/blockchain/trc20.service'
+import {QueueTask} from "../queue/queue.task";
 
 interface IBlockchainService {
   sendTx(body: object): object;
@@ -27,6 +28,7 @@ export class BlockchainController {
               private usdtService: UsdtService,
               private trxService: TrxService,
               private trc20Service: Trc20Service,
+              private queuetask:QueueTask,
               @Inject('btc') private btcTask,
               @Inject('eth') private ethTask,
               @Inject('usdt') private usdtTask,
@@ -93,6 +95,7 @@ export class BlockchainController {
         throw new Error("Invalid request");
       }
     }
+    this.queuetask.taskPayingSumCheck()
     return task.sendTx(params.send)
   }
 }

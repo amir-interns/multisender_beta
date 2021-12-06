@@ -1,42 +1,61 @@
 import { Injectable} from "@nestjs/common";
 import { CronJob } from "cron";
 import { SchedulerRegistry } from "@nestjs/schedule";
+import {getConnection, getRepository} from "typeorm";
+import {RequestEntity} from "src/entity/request.entity";
+import {BlockchainEntity} from "src/entity/blockchain.entity";
 
 
 @Injectable()
 export class BlockchainTask {
   private schedulerRegistry
   private service
-  constructor(private serv:object)
-  {
-    this.service=serv
+  constructor(private serv:object,
+  )
+  { this.service=serv
     this.schedulerRegistry = new SchedulerRegistry()
   }
   async sendTx(send:object) {
     const res = await this.service.sendTx(send)
-    this.taskPayingSumCheck(res[0], res[1], res[2])
-    return [res[0], res[1].toString()]
+    const result = await this.searchPayedReq()
+    return [res[0], res[1]]
   }
-  async taskPayingSumCheck(address:string, sum:number, id:number){
-    let count = 0
+
+  async searchPayedReq(){
     const job = new CronJob(`* * * * * *`, async() => {
-      count += 1
-      const balance = BigInt(await this.service.getBalance(address))
-      if ( balance >= sum){
-        this.schedulerRegistry.deleteCronJob(address)
-        const hash = await this.service.sendSubmitTX()
-        this.service.delApplication(id)
-        this.confiramtJob(hash)
+      const queue = await getRepository(RequestEntity)
+        .createQueryBuilder()
+        .getMany()
+      for (let i = 0; i < queue.length; i++) {
+        if (queue[i].status === 'payed') {
+          await getConnection()
+            .createQueryBuilder()
+            .update(RequestEntity)
+            .set({status: 'sended', date: new Date()})
+            .where({id: queue[i].id})
+            .execute();
+          const res = await this.service.sendSubmitTX(queue[i].idBlEnt)
+          this.confirmatetJob(res)
+        }
+        if (Number(new Date())- Number(queue[i].date) > 3600000 && queue[i].status === 'new'){
+          await getConnection()
+            .createQueryBuilder()
+            .update(RequestEntity)
+            .set({status: 'expired', date: new Date()})
+            .where({id: queue[i].id})
+            .execute();
+          await getConnection()
+            .createQueryBuilder()
+            .update(BlockchainEntity)
+            .set({status: 'expired', date: new Date()})
+            .where({id: queue[i].idBlEnt})
+            .execute();
+        }
       }
-      if (count >= 60){
-        this.schedulerRegistry.deleteCronJob(address)
-        this.service.delApplication(id)
-      }
-    })
-    this.schedulerRegistry.addCronJob(address,job)
+  })
     job.start()
   }
-  async confiramtJob(hash){
+  async confirmatetJob(hash){
     const job = new CronJob(`* * * * * *`, async() => {
       if (await this.service.checkTx(hash)) {
         this.schedulerRegistry.deleteCronJob(hash)
