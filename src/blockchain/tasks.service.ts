@@ -1,9 +1,6 @@
 import { Injectable} from "@nestjs/common";
 import { CronJob } from "cron";
 import { SchedulerRegistry } from "@nestjs/schedule";
-import {getConnection, getRepository} from "typeorm";
-import {RequestEntity} from "src/entity/request.entity";
-import {BlockchainEntity} from "src/entity/blockchain.entity";
 
 
 @Injectable()
@@ -12,7 +9,7 @@ export class BlockchainTask {
   private service
   constructor(private serv:object,
   )
-  { this.service=serv
+  { this.service = serv
     this.schedulerRegistry = new SchedulerRegistry()
   }
   async sendTx(send:object) {
@@ -23,33 +20,16 @@ export class BlockchainTask {
 
   async searchPayedReq(){
     const job = new CronJob(`* * * * * *`, async() => {
-      const queue = await getRepository(RequestEntity)
-        .createQueryBuilder()
-        .getMany()
+      const queue = await this.service.bdService.getManyRequestRecords()
       for (let i = 0; i < queue.length; i++) {
         if (queue[i].status === 'payed') {
-          await getConnection()
-            .createQueryBuilder()
-            .update(RequestEntity)
-            .set({status: 'sended', date: new Date()})
-            .where({id: queue[i].id})
-            .execute();
+          await this.service.bdService.updateQueue(queue[i].id,'sended')
           const res = await this.service.sendSubmitTX(queue[i].idBlEnt)
-          this.confirmatetJob(res)
+          await this.confirmatetJob(res)
         }
-        if (Number(new Date())- Number(queue[i].date) > 3600000 && queue[i].status === 'new'){
-          await getConnection()
-            .createQueryBuilder()
-            .update(RequestEntity)
-            .set({status: 'expired', date: new Date()})
-            .where({id: queue[i].id})
-            .execute();
-          await getConnection()
-            .createQueryBuilder()
-            .update(BlockchainEntity)
-            .set({status: 'expired', date: new Date()})
-            .where({id: queue[i].idBlEnt})
-            .execute();
+        if (Number(new Date()) - Number(queue[i].date) > 3600000 && queue[i].status === 'new'){
+          await this.service.bdService.updateQueue(queue[i].id,'expired')
+          await this.service.bdService.epiredBlockchain(queue[i].idBlEnt)
         }
       }
   })

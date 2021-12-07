@@ -15,9 +15,8 @@ import {BlockchainTask} from "src/blockchain/tasks.service";
 import { TrxService } from 'src/blockchain/trx.service';
 import { Trc20Service } from 'src/blockchain/trc20.service';
 import {RequestEntity} from "src/entity/request.entity";
-import {QueueService} from "src/queue/queue.service";
-import {QueueTask} from "../queue/queue.task";
-import {QueueModule} from "../queue/queue.module";
+import {QueueTask} from "src/queue/queue.task";
+import {BdService} from "src/queue/bd.service";
 
 
 @Module({
@@ -25,7 +24,7 @@ import {QueueModule} from "../queue/queue.module";
         ConfigModule.forFeature(BitcoinConfig), ConfigModule.forFeature(TokenConfig),
         ConfigModule.forFeature(EthereumConfig)],
     providers: [ BitcoinService, EthereumService, UsdtService, BlockchainTask, TrxService, Trc20Service,Object,
-      QueueTask, QueueService,
+      QueueTask, BdService,
         {
             provide:'btc', useFactory: (btcSevice:BitcoinService)=>{
                 return new BlockchainTask(btcSevice)
