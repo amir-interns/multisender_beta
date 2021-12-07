@@ -77,7 +77,8 @@ export class BlockchainController {
         break;
       }
       case Service.Bitcoin: {
-        task = this.btcTask
+        task = this.btcTask[0]
+        queueTask = this.btcTask[1]
         break;
       }
       case Service.ERC20: {
@@ -86,11 +87,13 @@ export class BlockchainController {
         break;
       }
       case Service.TRC20: {
-        task = this.trc20Task
+        task = this.trc20Task[0]
+        queueTask = this.trc20Task[1]
         break;
       }
       case Service.Tron: {
-        task = this.trxTask
+        task = this.trxTask[0]
+        queueTask = this.trxTask[1]
         break;
       }
       default: {
