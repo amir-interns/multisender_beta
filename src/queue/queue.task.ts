@@ -8,10 +8,11 @@ import { EthereumService } from 'src/blockchain/ethereum.service';
 @Injectable()
 export class QueueTask {
   private schedulerRegistry
+  private service
   constructor(
-    private bdService: BdService,
-    private ethService:EthereumService)
+    private serv:object)
   {
+    this.service = serv
     this.schedulerRegistry = new SchedulerRegistry()
   }
 
@@ -19,11 +20,11 @@ export class QueueTask {
     let count = 0
     const job = new CronJob(`* * * * * *`, async() => {
       count += 1
-      const queue = await this.bdService.findAllNewRequest()
+      const queue = await this.service.bdService.findAllNewRequest()
       for (let i = 0; i < queue.length; i++){
-        const balance = BigInt(await this.ethService.getBalance(queue[i].address))
+        const balance = BigInt(await this.service.getBalance(queue[i].address))
         if ( balance >= BigInt(queue[i].finalSum)){
-          this.bdService.updateQueue(queue[i].id, 'payed')
+          this.service.bdService.updateQueue(queue[i].id, 'payed')
         }
       }
     })

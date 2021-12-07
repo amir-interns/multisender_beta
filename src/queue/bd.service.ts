@@ -17,7 +17,7 @@ export class BdService {
 
   async createNewBlockchainRecord(send, type) {
     const bdRecord = await this.blockchainRepository.save({
-      result: send, typeCoin: 'eth',
+      result: send, typeCoin: type,
       status: 'new', date: new Date()
     })
     return bdRecord

@@ -12,8 +12,7 @@ import {BdService} from "src/queue/bd.service";
 @Module({
     imports: [TypeOrmModule.forFeature( [ RequestEntity, BlockchainEntity]),
         ConfigModule.forFeature(EthereumConfig)],
-    providers: [ QueueTask, EthereumService, BdService
-    ]
+    providers: [ QueueTask, EthereumService, BdService, Object]
 })
 export class QueueModule {
 

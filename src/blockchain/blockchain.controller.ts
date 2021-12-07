@@ -28,7 +28,6 @@ export class BlockchainController {
               private usdtService: UsdtService,
               private trxService: TrxService,
               private trc20Service: Trc20Service,
-              private queuetask:QueueTask,
               @Inject('btc') private btcTask,
               @Inject('eth') private ethTask,
               @Inject('usdt') private usdtTask,
@@ -69,10 +68,12 @@ export class BlockchainController {
   @UseGuards(JwtAuthGuard)
   @Post('sendTx')
   async sendBlockchainTx(@Body() params: any):Promise<any>{
+    let queueTask
     let task: IBlockchainService
     switch(params.type) {
       case Service.Ethereum: {
-        task = this.ethTask
+        task = this.ethTask[0]
+        queueTask = this.ethTask[1]
         break;
       }
       case Service.Bitcoin: {
@@ -80,7 +81,8 @@ export class BlockchainController {
         break;
       }
       case Service.ERC20: {
-        task = this.usdtTask
+        task = this.usdtTask[0]
+        queueTask = this.usdtTask[1]
         break;
       }
       case Service.TRC20: {
@@ -95,7 +97,7 @@ export class BlockchainController {
         throw new Error("Invalid request");
       }
     }
-    this.queuetask.taskPayingSumCheck()
+    queueTask.taskPayingSumCheck()
     return task.sendTx(params.send)
   }
 }
