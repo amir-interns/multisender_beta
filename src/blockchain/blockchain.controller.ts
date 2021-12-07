@@ -67,7 +67,7 @@ export class BlockchainController {
     }
     return await service.getBalance(address)
   }
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Post('sendTx')
   async sendBlockchainTx(@Body() params: any):Promise<any>{
     let task: IBlockchainService
