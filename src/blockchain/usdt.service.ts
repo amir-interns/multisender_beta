@@ -6,7 +6,6 @@ import {ConfigService} from "@nestjs/config"
 const Contract = require('web3-eth-contract')
 import *  as abiT from '@/assets/abiMSTokens.json'
 import *  as abi from '@/assets/abicontract.json'
-import {BdService} from "src/queue/bd.service";
 const Web3 = require('web3')
 const BigNumber = require('bignumber.js')
 
@@ -27,7 +26,7 @@ export class UsdtService {
     @InjectRepository(BlockchainEntity)
     private blockchainRepository:Repository<BlockchainEntity>,
     private tokenConfig:ConfigService,
-    private bdService:BdService) {
+    ) {
     this.webSocketInfura = tokenConfig.get<string>('TokenConfig.tokenWebSocketInfura')
     this.gasPrice = tokenConfig.get<number>('EthereumConfig.gasPrice')
     this.gasLimit = tokenConfig.get<number>('TokenConfig.tokenGasLimit')
@@ -63,47 +62,47 @@ export class UsdtService {
     let finalSum = BigInt(0)
     const fee = this.gasLimit * this.gasPrice
     finalSum = summaryCoins + BigInt(fee)
-    const bdRecord = await this.bdService.createNewBlockchainRecord(send, 'usdt')
-    await this.bdService.createNewRequestRecord(newAc, bdRecord, finalSum)
+    // const bdRecord = await this.bdService.createNewBlockchainRecord(send, 'usdt')
+    // await this.bdService.createNewRequestRecord(newAc, bdRecord, finalSum)
     return [newAc.address, finalSum.toString()]
   }
     async sendSubmitTX(idd){
-    const queryTx = await this.bdService.getOneBlockchainRecord(idd)
-    const queryQue = await this.bdService.getOneRequestRecord(idd)
+    // const queryTx = await this.bdService.getOneBlockchainRecord(idd)
+    // const queryQue = await this.bdService.getOneRequestRecord(idd)
     const contractT = new Contract(abi['default'], this.addrContract)
     const txT = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
       to: this.addrContract,
-      from: queryQue.address,
-      data: await contractT.methods.approve(this.MSAddrContr, queryQue.finalSum).encodeABI()
+      // from: queryQue.address,
+      // data: await contractT.methods.approve(this.MSAddrContr, queryQue.finalSum).encodeABI()
     };
-    const signedTxT = await this.web3.eth.accounts.signTransaction(txT, queryQue.prKey)
-    await this.web3.eth.sendSignedTransaction(signedTxT.rawTransaction)
+    // const signedTxT = await this.web3.eth.accounts.signTransaction(txT, queryQue.prKey)
+    // await this.web3.eth.sendSignedTransaction(signedTxT.rawTransaction)
     const receivers = []
     const amounts = []
-    for (let i = 0; i < Object.keys(queryTx.result).length; i++) {
-      receivers.push(queryTx.result[i].to)
-      amounts.push(queryTx.result[i].value)
-    }
+    // for (let i = 0; i < Object.keys(queryTx.result).length; i++) {
+    //   receivers.push(queryTx.result[i].to)
+    //   amounts.push(queryTx.result[i].value)
+    // }
     const contract = new Contract(abiT['default'], this.MSAddrContr)
     const tx = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
       to: this.MSAddrContr,
-      from: queryQue.address,
+      // from: queryQue.address,
       data: await contract.methods.transferTokens(this.addrContract, receivers, amounts).encodeABI()
     };
 
-    const signedTx = await this.web3.eth.accounts.signTransaction(tx, queryQue.prKey)
-    const result = await this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-    await this.bdService.updateStatusBlockchainRecord(idd,result)
-    return result.transactionHash
+    // const signedTx = await this.web3.eth.accounts.signTransaction(tx, queryQue.prKey)
+    // const result = await this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+    // await this.bdService.updateStatusBlockchainRecord(idd,result)
+    // return result.transactionHash
   }
   async checkTx(hash) {
     const transRes = await this.web3.eth.getTransactionReceipt(hash)
     if (await this.web3.eth.getBlockNumber() - transRes.blockNumber >= 3) {
-      await this.bdService.updateStatusSubmitBlockchainRecord(hash)
+      // await this.bdService.updateStatusSubmitBlockchainRecord(hash)
     }
   }
 }

@@ -1,15 +1,13 @@
 import { Injectable} from "@nestjs/common";
 import { CronJob } from "cron";
 import { SchedulerRegistry } from "@nestjs/schedule";
-import {BdService} from "src/queue/bd.service";
 import { EthereumService } from 'src/blockchain/ethereum.service';
 import { Cron } from '@nestjs/schedule';
 import {getConnection, getRepository, Repository} from "typeorm";
 import {RequestEntity} from "../entity/request.entity";
 import {BlockchainEntity} from "../entity/blockchain.entity";
 import {InjectRepository} from "@nestjs/typeorm";
-import {RequestRepository} from "./CustomQueueRep";
-import {BlockchainRepository} from "../blockchain/CustomBlRep";
+import {BlockchainRepository} from "../blockchain/customBlRep";
 import {UsdtService} from "../blockchain/usdt.service";
 import {TrxService} from "../blockchain/trx.service";
 import {Trc20Service} from "../blockchain/trc20.service";

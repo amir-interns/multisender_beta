@@ -3,7 +3,6 @@ import { ConfigService } from "@nestjs/config";
 const TronWeb = require('tronweb');
 import {BlockchainEntity} from "src/entity/blockchain.entity"
 import { InjectRepository } from '@nestjs/typeorm'
-import {BdService} from "../queue/bd.service";
 const TronGrid = require('trongrid')
 @Injectable()
 export class TrxService {
@@ -16,9 +15,7 @@ export class TrxService {
     public contractAddress
     public tronGrid
 
-    constructor(@InjectRepository(BlockchainEntity)
-                private bdService:BdService,
-                private configService: ConfigService) {
+    constructor(private configService: ConfigService) {
         this.fullNode = configService.get<string>('TrxConfig.fullNode')
         this.solidityNode = configService.get<string>('TrxConfig.solidityNode')
         this.eventServer = configService.get<string>('TrxConfig.eventServer')
@@ -64,26 +61,26 @@ export class TrxService {
             receivers.push(body[i].to)
             amounts.push(body[i].value)
         }
-        const bdRecord = await this.bdService.createNewBlockchainRecord(body,'trx')
-        await this.bdService.createNewRequestRecord(await this.tronWeb.trx.accounts.create(), bdRecord, trxToSend)
+        // const bdRecord = await this.bdService.createNewBlockchainRecord(body,'trx')
+        // await this.bdService.createNewRequestRecord(await this.tronWeb.trx.accounts.create(), bdRecord, trxToSend)
     }
 
     async sendSubmitTX(idd){
-        const queryTx = await this.bdService.getOneBlockchainRecord(idd)
-        const queryQue = await this.bdService.getOneRequestRecord(idd)
+        // const queryTx = await this.bdService.getOneBlockchainRecord(idd)
+        // const queryQue = await this.bdService.getOneRequestRecord(idd)
         const receivers = []
         const amounts = []
-        for (let i = 0; i < Object.keys(queryTx.result).length; i++) {
-            receivers.push(queryTx.result[i].to)
-            amounts.push(queryTx.result[i].value)
-        }
+        // for (let i = 0; i < Object.keys(queryTx.result).length; i++) {
+        //     receivers.push(queryTx.result[i].to)
+        //     amounts.push(queryTx.result[i].value)
+        // }
         const contract = await this.tronWeb.contract().at(this.contractAddress);
         const result = await contract.send(receivers,amounts).send({
             feeLimit:100_000_000,
-            callValue:queryQue.finalSum,
+            // callValue:queryQue.finalSum,
             shouldPollResponse:false
         });
-        await this.bdService.updateStatusBlockchainRecord(idd,result)
+        // await this.bdService.updateStatusBlockchainRecord(idd,result)
         return result
 
     }
@@ -95,7 +92,7 @@ export class TrxService {
         }
         const res =await this.tronGrid.transaction.getEvents(hash, options)
         if (res.success) {
-            await this.bdService.updateStatusSubmitBlockchainRecord(hash)
+            // await this.bdService.updateStatusSubmitBlockchainRecord(hash)
             return true
         }
     }

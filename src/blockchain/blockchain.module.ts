@@ -15,10 +15,8 @@ import {BlockchainTask} from "src/blockchain/tasks.service";
 import { TrxService } from 'src/blockchain/trx.service';
 import { Trc20Service } from 'src/blockchain/trc20.service';
 import {RequestEntity} from "src/entity/request.entity";
-import {QueueTask} from "src/queue/queue.task";
-import {BdService} from "src/queue/bd.service";
 import {Connection, Repository} from "typeorm";
-import {BlockchainRepository} from "./CustomBlRep";
+import {BlockchainRepository} from "./customBlRep";
 
 
 @Module({
@@ -26,7 +24,7 @@ import {BlockchainRepository} from "./CustomBlRep";
         ConfigModule.forFeature(BitcoinConfig), ConfigModule.forFeature(TokenConfig),
         ConfigModule.forFeature(EthereumConfig)],
     providers: [ BitcoinService, EthereumService, UsdtService, BlockchainTask, TrxService, Trc20Service,Object,
-        BdService,BlockchainEntity, Repository, BlockchainRepository,
+        BlockchainEntity, Repository, BlockchainRepository,
 
         // {
         //     provide:'btc', useFactory: (btcSevice:BitcoinService, blockchainRepository: Repository<BlockchainEntity>)=>{
