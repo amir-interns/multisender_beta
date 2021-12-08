@@ -1,47 +1,49 @@
 import { Injectable} from "@nestjs/common";
 import { CronJob } from "cron";
-import { SchedulerRegistry } from "@nestjs/schedule";
+import {Cron, SchedulerRegistry} from "@nestjs/schedule";
+import {InjectRepository} from "@nestjs/typeorm";
+import {BlockchainEntity} from "../entity/blockchain.entity";
+import {Connection, getRepository, Repository} from "typeorm";
+import {RequestEntity} from "../entity/request.entity";
 
 
 @Injectable()
 export class BlockchainTask {
   private schedulerRegistry
   private service
+  private blockchainRepository
   constructor(private serv:object,
+              @InjectRepository(BlockchainEntity)
+              private rep:object
   )
   { this.service = serv
+    this.blockchainRepository = rep
     this.schedulerRegistry = new SchedulerRegistry()
   }
-  async sendTx(send:object) {
-    const res = await this.service.sendTx(send)
-    const result = await this.searchPayedReq()
-    return [res[0], res[1]]
-  }
-
-  async searchPayedReq(){
-    const job = new CronJob(`* * * * * *`, async() => {
-      const queue = await this.service.bdService.getManyRequestRecords()
-      for (let i = 0; i < queue.length; i++) {
-        if (queue[i].status === 'payed') {
-          await this.service.bdService.updateQueue(queue[i].id,'sended')
-          const res = await this.service.sendSubmitTX(queue[i].idBlEnt)
-          await this.confirmatetJob(res)
-        }
-        if (Number(new Date()) - Number(queue[i].date) > 3600000 && queue[i].status === 'new'){
-          await this.service.bdService.updateQueue(queue[i].id,'expired')
-          await this.service.bdService.epiredBlockchain(queue[i].idBlEnt)
-        }
-      }
-  })
-    job.start()
-  }
-  async confirmatetJob(hash){
-    const job = new CronJob(`* * * * * *`, async() => {
-      if (await this.service.checkTx(hash)) {
-        this.schedulerRegistry.deleteCronJob(hash)
-      }
+  async sendTx(send:object, type:string) {
+    console.log(this.blockchainRepository, typeof(this.blockchainRepository))
+    const bdRecord = await this.blockchainRepository.save({
+      result: send, typeCoin: type,
+      status: 'new', date: new Date()
     })
-    this.schedulerRegistry.addCronJob(hash,job)
-    job.start()
+    return `Request № ${bdRecord.id} crete`
+  }
+  @Cron('* * * * * *')
+  async confirmateJob() {
+    try {
+      const bdRecord = await getRepository(BlockchainEntity)
+        .createQueryBuilder()
+        .where({status: 'submitted'})
+        .getOne();
+      if (this.service.checkTx(bdRecord.txHash)) {
+        await getRepository(BlockchainEntity)
+          .createQueryBuilder()
+          .where({status: 'confirmed'})
+          .getOne();
+      }
+    }
+    catch{
+      return 0
+    }
   }
 }
