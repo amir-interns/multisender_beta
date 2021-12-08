@@ -3,10 +3,7 @@ const Web3 = require ('web3')
 import {ConfigService} from '@nestjs/config'
 const Contract = require ('web3-eth-contract')
 import *  as abi from '@/assets/abiEth.json'
-import {BdService} from "src/queue/bd.service";
-import {InjectRepository} from "@nestjs/typeorm";
-import {BlockchainEntity} from "../entity/blockchain.entity";
-import {Repository} from "typeorm";
+
 
 
 @Injectable()
@@ -33,24 +30,27 @@ export class EthereumService {
   }
 
   async getBalance(address:string){
-    if (! this.web3.utils.isAddress(address)){
+    if (! await this.web3.utils.isAddress(address)){
       return `${address} is wrong address!`
     }
-    return parseInt(await this.web3.eth.getBalance(address), 10)
+    return await this.web3.eth.getBalance(address)
   }
   async createNewAccount(){
-    return this.web3.eth.accounts.create()
+    return await this.web3.eth.accounts.create()
   }
   isAddress(address:string){
     return this.web3.utils.isAddress(address)
+  }
+  getFee(){
+    return this.gasLimit * this.gasPrice
   }
 
   async sendTx(address,key, send){
     const receivers = []
     const amounts = []
-    for (let i = 0; i < Object.keys(send).length; i++) {
-      receivers.push(send.to)
-      amounts.push(send.value)
+    for (let i = 0; i < send.length; i++) {
+      receivers.push(send[i].to)
+      amounts.push(send[i].value)
     }
     const contract = new Contract(abi['default'], this.ethContract)
     const newAcBal = await this.web3.eth.getBalance(address)
@@ -65,6 +65,7 @@ export class EthereumService {
       data: contract.methods.send(receivers, amounts).encodeABI()
     }
     const signedTr=await this.web3.eth.accounts.signTransaction(rawTr, key)
+
     const result = await this.web3.eth.sendSignedTransaction(signedTr.rawTransaction)
     return result.transactionHash
   }

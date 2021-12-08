@@ -22,6 +22,7 @@ interface IBlockchainTask{
   confirmateJob():any;
 }
 
+
 enum Service {
   Bitcoin = 'btc',
   Ethereum = 'eth',
@@ -43,6 +44,7 @@ export class BlockchainController {
               // @Inject('usdt') private usdtTask,
               // @Inject('trx') private trxTask,
               // @Inject('trc20') private trc20Task,
+
     @InjectRepository(BlockchainEntity)
     private blockchainRepository:Repository<BlockchainEntity>
   ) {}

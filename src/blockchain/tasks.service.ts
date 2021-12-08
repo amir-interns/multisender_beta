@@ -3,7 +3,7 @@ import { CronJob } from "cron";
 import {Cron, SchedulerRegistry} from "@nestjs/schedule";
 import {InjectRepository} from "@nestjs/typeorm";
 import {BlockchainEntity} from "../entity/blockchain.entity";
-import {Connection, getRepository, Repository} from "typeorm";
+import {Connection, getConnection, getRepository, Repository} from "typeorm";
 import {RequestEntity} from "../entity/request.entity";
 
 
@@ -11,17 +11,12 @@ import {RequestEntity} from "../entity/request.entity";
 export class BlockchainTask {
   private schedulerRegistry
   private service
-  private blockchainRepository
   constructor(private serv:object,
-              @InjectRepository(BlockchainEntity)
-              private rep:object
-  )
+              private blockchainRepository:Repository<BlockchainEntity>)
   { this.service = serv
-    this.blockchainRepository = rep
     this.schedulerRegistry = new SchedulerRegistry()
   }
   async sendTx(send:object, type:string) {
-    console.log(this.blockchainRepository, typeof(this.blockchainRepository))
     const bdRecord = await this.blockchainRepository.save({
       result: send, typeCoin: type,
       status: 'new', date: new Date()
@@ -34,12 +29,16 @@ export class BlockchainTask {
       const bdRecord = await getRepository(BlockchainEntity)
         .createQueryBuilder()
         .where({status: 'submitted'})
-        .getOne();
-      if (this.service.checkTx(bdRecord.txHash)) {
-        await getRepository(BlockchainEntity)
-          .createQueryBuilder()
-          .where({status: 'confirmed'})
-          .getOne();
+        .getMany();
+      for (let i=0; i <= bdRecord.length; i++) {
+        if (await this.service.checkTx(bdRecord[i].txHash)) {
+          await getConnection()
+            .createQueryBuilder()
+            .update(BlockchainEntity)
+            .set({status: 'confirmed'})
+            .where({id: bdRecord[i].id})
+            .execute();
+        }
       }
     }
     catch{
