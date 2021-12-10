@@ -12,6 +12,7 @@ import {UsdtService} from "../blockchain/usdt.service";
 import {TrxService} from "../blockchain/trx.service";
 import {Trc20Service} from "../blockchain/trc20.service";
 import {BitcoinService} from "../blockchain/bitcoin.service";
+import BigNumber from "bignumber.js";
 
 enum Service {
   Bitcoin = 'btc',
@@ -54,12 +55,12 @@ export class QueueTask {
         .getOne();
       const service = this.getService(bdRecord.typeCoin)
       const account = await service.createNewAccount()
-      let summaryCoins = BigInt(service.getFee())
+      let summaryCoins = new BigNumber(service.getFee())
       for (let i = 0; i < Object.keys(bdRecord.result).length; i++) {
         if (service.isAddress(bdRecord.result[i].to) !== true) {
           return `${bdRecord.result[i].to} is wrong address!`
         }
-        summaryCoins += BigInt(bdRecord.result[i].value)
+        summaryCoins = summaryCoins.plus(new BigNumber(bdRecord.result[i].value))
       }
         await this.requestRepository.save({
           status: 'new', idBlEnt: bdRecord.id, finalSum: summaryCoins.toString(),
@@ -83,8 +84,8 @@ export class QueueTask {
       for (let i = 0; i <= queue.length; i++) {
         const baza = await getRepository(BlockchainEntity).findOne({where: [{id: queue[i].idBlEnt}]})
         const service = this.getService(baza.typeCoin)
-        const balance = BigInt(await service.getBalance(queue[i].address))
-        if (balance >= BigInt(queue[i].finalSum)) {
+        const balance = new BigNumber(await service.getBalance(queue[i].address))
+        if (new BigNumber(queue[i].finalSum).isLessThanOrEqualTo(balance)) {
           const payedReq = await getConnection()
             .createQueryBuilder()
             .update(RequestEntity)
