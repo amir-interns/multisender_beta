@@ -14,15 +14,18 @@ import {UsdtService} from "../blockchain/usdt.service";
 import {TrxService} from "../blockchain/trx.service";
 import {Trc20Service} from "../blockchain/trc20.service";
 import {BlockchainRepository} from "../blockchain/customBlRep";
+import {BlockchainModule} from "../blockchain/blockchain.module";
+import {RequestController} from "./request.controller";
+import {RequestRepository} from "./request.custom.provider";
 
 
 
 @Module({
     imports: [TypeOrmModule.forFeature( [ RequestEntity, BlockchainEntity]),
-        ConfigModule.forFeature(EthereumConfig)],
-    providers: [ QueueTask, EthereumService, BitcoinService, UsdtService, TrxService, Trc20Service,
-        Object, Repository
-    ]
+        ConfigModule.forFeature(EthereumConfig), BlockchainModule],
+    providers: [ QueueTask, Object, Repository, RequestRepository,
+    ],
+    controllers:[RequestController]
 })
 export class QueueModule {
 

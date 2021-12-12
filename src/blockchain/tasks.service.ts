@@ -5,23 +5,65 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {BlockchainEntity} from "../entity/blockchain.entity";
 import {Connection, getConnection, getRepository, Repository} from "typeorm";
 import {RequestEntity} from "../entity/request.entity";
+import {EthereumService} from "./ethereum.service";
+import {BlockchainRepository} from "./customBlRep";
+import {UsdtService} from "./usdt.service";
+import {BitcoinService} from "./bitcoin.service";
 
+
+//Move enum and Interface to another file from both tasks
+enum Service {
+  Bitcoin = 'btc',
+  Ethereum = 'eth',
+  ERC20 = 'usdt',
+  TRC20 = 'trc20',
+  Tron = 'trx'
+}
+
+interface IBlockchainService {
+  sendTx(address:string, key:string, send: object): any;
+  getBalance(address: string): Promise<any>;
+  createNewAccount();
+  isAddress(address:string);
+  getFee();
+  checkTx(hash:string)
+}
 
 @Injectable()
 export class BlockchainTask {
-  private schedulerRegistry
-  private service
-  constructor(private serv:object,
-              private blockchainRepository:Repository<BlockchainEntity>)
-  { this.service = serv
-    this.schedulerRegistry = new SchedulerRegistry()
+  constructor(@InjectRepository(BlockchainEntity)
+              private blockchainRepository:Repository<BlockchainEntity>,
+              @InjectRepository(RequestEntity)
+              private requestRepository:Repository<RequestEntity>,
+              private ethService:EthereumService,
+              private usdtService:UsdtService,
+              private btcService:BitcoinService)
+  { }
+  @Cron('* * * * * *')
+  async test(){
+    this.btcService.createAccount()
   }
-  async sendTx(send:object, type:string) {
-    const bdRecord = await this.blockchainRepository.save({
-      result: send, typeCoin: type,
-      status: 'new', date: new Date()
-    })
-    return `Request № ${bdRecord.id} crete`
+  @Cron('* * * * * *')
+  async searchPayedRequest() {
+    try {
+      const payedBlAntity = await getRepository(RequestEntity).findOne({where: {status: 'payed'}})
+      const service = this.getService(payedBlAntity.typeCoin)
+      await getConnection()
+        .createQueryBuilder()
+        .update(RequestEntity)
+        .set({status: 'done'})
+        .where({id: payedBlAntity.id})
+        .execute();
+      const hash = await service.sendTx(payedBlAntity.address, payedBlAntity.prKey, payedBlAntity.result)
+      await this.blockchainRepository.save({
+        typeCoin:'eth', status: 'submitted',
+        result: payedBlAntity.result, date: new Date(),
+        txHash: hash
+      })
+    }
+    catch{
+      return 0
+    }
   }
   @Cron('* * * * * *')
   async confirmateJob() {
@@ -31,7 +73,8 @@ export class BlockchainTask {
         .where({status: 'submitted'})
         .getMany();
       for (let i=0; i <= bdRecord.length; i++) {
-        if (await this.service.checkTx(bdRecord[i].txHash)) {
+        const service = this.getService(bdRecord[i].typeCoin)
+        if (await service.checkTx(bdRecord[i].txHash)) {
           await getConnection()
             .createQueryBuilder()
             .update(BlockchainEntity)
@@ -43,6 +86,25 @@ export class BlockchainTask {
     }
     catch{
       return 0
+    }
+  }
+
+  getService(type){
+    let service:IBlockchainService
+    switch(type) {
+      case Service.Ethereum: {
+        service = this.ethService
+        return service
+        break;
+      }
+      case Service.ERC20: {
+        service = this.usdtService
+        return service
+        break;
+      }
+      default: {
+        throw new Error("Invalid request");
+      }
     }
   }
 }

@@ -6,6 +6,7 @@ import { BlockchainDto } from "src/blockchain/dto/blockchain.dto";
 import { ConfigService } from "@nestjs/config";
 const axios = require("axios")
 const bitcore = require("bitcore-lib")
+var CoinKey = require('coinkey');
 
 
 
@@ -35,6 +36,11 @@ export class BitcoinService {
     return axios.get(`https://sochain.com/api/v2/get_address_balance/${this.sochainNetwork}/${address}`).then((res) => { return res.data.data.confirmed_balance })
   }
 
+  createAccount(){
+    const wallet = new CoinKey.createRandom();
+    console.log("SAVE BUT DO NOT SHARE THIS:", wallet.privateKey.toString('hex'));
+    console.log("Address:", wallet.publicAddress);
+  }
   async sendTx(body) {
     let transactionAbout = {
       txHash: "",

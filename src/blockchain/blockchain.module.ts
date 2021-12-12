@@ -1,6 +1,5 @@
 import { Module} from '@nestjs/common';
 import { BitcoinService } from 'src/blockchain/bitcoin.service';
-import { BlockchainController } from 'src/blockchain/blockchain.controller';
 import { EthereumService } from 'src/blockchain/ethereum.service';
 import {InjectRepository, TypeOrmModule} from '@nestjs/typeorm';
 import { BlockchainEntity } from 'src/entity/blockchain.entity';
@@ -32,12 +31,12 @@ import {BlockchainRepository} from "./customBlRep";
         //     },
         //     inject: [BitcoinService]
         // },
-        {
-            provide:'eth', useFactory: async (ethService:EthereumService,  blockchainRepository:BlockchainRepository)=>{
-                return new BlockchainTask(ethService, blockchainRepository.rep)
-            },
-            inject: [EthereumService,BlockchainRepository]
-        },
+        // {
+        //     provide:'eth', useFactory: async (ethService:EthereumService,  blockchainRepository:BlockchainRepository)=>{
+        //         return new BlockchainTask(ethService, blockchainRepository.rep)
+        //     },
+        //     inject: [EthereumService,BlockchainRepository]
+        // },
         // {
         //     provide:'usdt', useFactory: (usdtService:UsdtService,blockchainRepository: Repository<BlockchainEntity>)=>{
         //         return new BlockchainTask(usdtService)
@@ -57,8 +56,7 @@ import {BlockchainRepository} from "./customBlRep";
         //     inject: [Trc20Service]
         // },
     ],
-    controllers: [BlockchainController],
-    exports:[]
+    exports:[EthereumService, BitcoinService, UsdtService, Trc20Service,TrxService,]
 })
 export class BlockchainModule {
 

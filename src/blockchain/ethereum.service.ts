@@ -3,6 +3,7 @@ const Web3 = require ('web3')
 import {ConfigService} from '@nestjs/config'
 const Contract = require ('web3-eth-contract')
 import *  as abi from '@/assets/abiEth.json'
+import BigNumber from "bignumber.js";
 
 
 
@@ -43,6 +44,9 @@ export class EthereumService {
   }
   getFee(){
     return this.gasLimit * this.gasPrice
+  }
+  getTokenBalance(address){
+    return 0
   }
 
   async sendTx(address,key, send){
