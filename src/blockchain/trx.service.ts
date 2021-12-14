@@ -31,7 +31,20 @@ export class TrxService {
 
         return this.tronWeb.trx.getBalance(address).then(result => {return result})
     }
+   async getTokenBalance(address){
+        return 0
+   }
 
+    getFee(){
+        return 0
+    }
+
+    isAddress(address:string){
+        return this.tronWeb.isAddress(address)
+    }
+    async createNewAccount() {
+        return await this.tronWeb.createAccount()
+    }
     async sendTx(body) {
         // Check max Txs
         let outputCount = 0;

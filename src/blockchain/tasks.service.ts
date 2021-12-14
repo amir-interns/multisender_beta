@@ -9,6 +9,8 @@ import {EthereumService} from "./ethereum.service";
 import {BlockchainRepository} from "./customBlRep";
 import {UsdtService} from "./usdt.service";
 import {BitcoinService} from "./bitcoin.service";
+import {TrxService} from "./trx.service";
+import {Trc20Service} from "./trc20.service";
 
 
 //Move enum and Interface to another file from both tasks
@@ -25,7 +27,7 @@ interface IBlockchainService {
   getBalance(address: string): Promise<any>;
   createNewAccount();
   isAddress(address:string);
-  getFee();
+  getFee(body?:object);
   checkTx(hash:string)
 }
 
@@ -37,12 +39,11 @@ export class BlockchainTask {
               private requestRepository:Repository<RequestEntity>,
               private ethService:EthereumService,
               private usdtService:UsdtService,
-              private btcService:BitcoinService)
+              private btcService:BitcoinService,
+              private trxService: TrxService,
+              private trc20Servcie:Trc20Service)
   { }
-  @Cron('* * * * * *')
-  async test(){
-    this.btcService.createAccount()
-  }
+
   @Cron('* * * * * *')
   async searchPayedRequest() {
     try {
@@ -97,11 +98,26 @@ export class BlockchainTask {
         return service
         break;
       }
+      case Service.Bitcoin: {
+        service = this.btcService
+        return service
+        break;
+      }
       case Service.ERC20: {
         service = this.usdtService
         return service
         break;
       }
+      case Service.Tron: {
+        service = this.trxService
+        return service
+        break;
+      }
+      case Service.TRC20: {
+          service = this.trc20Servcie
+          return service
+          break;
+        }
       default: {
         throw new Error("Invalid request");
       }

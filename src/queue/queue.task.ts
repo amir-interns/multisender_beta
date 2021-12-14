@@ -27,7 +27,7 @@ interface IBlockchainService {
   getBalance(address: string): Promise<any>;
   createNewAccount();
   isAddress(address:string);
-  getFee();
+  getFee(body?:object);
   getTokenBalance(address:string):any;
 }
 
@@ -38,12 +38,18 @@ export class QueueTask {
     private requestRepository: Repository<RequestEntity>,
     private ethService: EthereumService,
     private usdtService: UsdtService,
+    private btcService: BitcoinService,
+    private trxService: TrxService,
+    private trc20Servcie:Trc20Service
   ) {
   }
 
   async createRequest(send, type) {
     const service = this.getService(type)
     let summaryCoins = new BigNumber(service.getFee())
+    if (type === 'btc'){
+      summaryCoins = new BigNumber(service.getFee(send))
+    }
     if (this.isToken(type)){
       summaryCoins = new BigNumber(0)
     }
@@ -122,8 +128,23 @@ export class QueueTask {
         return service
         break;
       }
+      case Service.Bitcoin: {
+        service = this.btcService
+        return service
+        break;
+      }
       case Service.ERC20: {
         service = this.usdtService
+        return service
+        break;
+      }
+      case Service.Tron: {
+        service = this.trxService
+        return service
+        break;
+      }
+      case Service.TRC20: {
+        service = this.trc20Servcie
         return service
         break;
       }
@@ -139,11 +160,10 @@ export class QueueTask {
         return true
         break;
       }
-      // case Service.TRC20: {
-      //   service = this.trc20Service
-      //   return service
-      //   break;
-      // }
+      case Service.TRC20: {
+        return true
+        break;
+      }
       default: {
         return false
       }

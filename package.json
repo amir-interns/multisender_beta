@@ -37,6 +37,7 @@
     "big-number": "^2.0.0",
     "bignumber.js": "^9.0.1",
     "bitcore-lib": "^8.25.10",
+    "coininfo": "^5.1.0",
     "coinkey": "^3.0.0",
     "concurrently": "^6.3.0",
     "cpx": "^1.5.0",

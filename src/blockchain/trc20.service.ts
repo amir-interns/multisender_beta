@@ -34,16 +34,32 @@ export class Trc20Service {
         this.tronGrid = new TronGrid(this.tronWeb)
     }
 
+   async getBalance(address){
+        return 0
+    }
 
-    async getBalance(address) {
+    async getTokenBalance(address) {
+        if (! await this.tronWeb.isAddress(address)){
+            return `${address} is wrong address!`
+        }
         const contract = await this.tronWeb.contract().at(this.TcontractAddress);
-
         const result = await contract.balanceOf(address).call()
         return result
     }
 
-    async sendTx(body) {
-        // Send Trx
+    getFee(){
+        return 0
+    }
+
+    isAddress(address:string){
+        return this.tronWeb.isAddress(address)
+    }
+
+    async createNewAccount() {
+        return await this.tronWeb.createAccount()
+    }
+
+    async sendTx(address,key, body) {
         let amounts=[]
         let receivers=[]
         let summaryCoins=0
@@ -52,31 +68,19 @@ export class Trc20Service {
             receivers.push(body[i].to)
             amounts.push(body[i].value)
         }
-        const blockchainEntity = new BlockchainEntity()
-        blockchainEntity.date = new Date()
-        blockchainEntity.status = 'new'
-        blockchainEntity.typeCoin = 'trc20'
-        blockchainEntity.result = body
-        const bdRecord = await this.blockchainRepository.save(blockchainEntity)
-
-        const contractT = await this.tronWeb.contract().at(this.TcontractAddress);
+        const tronweb2 = new TronWeb(this.fullNode, this.solidityNode, this.eventServer, key)
+        const contractT = await tronweb2.contract().at(this.TcontractAddress);
         contractT.approve(this.contractAddress, summaryCoins).send({
             feeLimit:100_000_000,
             shouldPollResponse:true
         });
 
-        const contract = await this.tronWeb.contract().at(this.contractAddress);
+        const contract = await tronweb2.contract().at(this.contractAddress);
 
         const result = await contract.transferTokens(this.TcontractAddress, receivers,amounts).send({
             feeLimit:100_000_000,
             shouldPollResponse:false
         });
-        await getConnection()
-            .createQueryBuilder()
-            .update(BlockchainEntity)
-            .set({ status:'submitted', txHash:result, result:body, date:new Date()})
-            .where({id:bdRecord.id})
-            .execute();
         return result
     }
 
@@ -87,13 +91,7 @@ export class Trc20Service {
         }
         const res =await this.tronGrid.transaction.getEvents(hash, options)
         if (res.success) {
-            await getConnection()
-              .createQueryBuilder()
-              .update(BlockchainEntity)
-              .set({status: 'confirmed', date: new Date()})
-              .where({txHash: hash})
-              .execute();
             return true
         }
-      }
+    }
 }
