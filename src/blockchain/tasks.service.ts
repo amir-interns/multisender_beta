@@ -57,7 +57,7 @@ export class BlockchainTask {
         .execute();
       const hash = await service.sendTx(payedBlAntity.address, payedBlAntity.prKey, payedBlAntity.result)
       await this.blockchainRepository.save({
-        typeCoin:'eth', status: 'submitted',
+        typeCoin:payedBlAntity.typeCoin, status: 'submitted',
         result: payedBlAntity.result, date: new Date(),
         txHash: hash
       })

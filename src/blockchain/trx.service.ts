@@ -46,57 +46,24 @@ export class TrxService {
         account.address=account.address.base58
         return account
     }
-    async sendTx(body) {
-        // Check max Txs
-        let outputCount = 0;
-        for (let i of body) {
-            outputCount++;
-        }
-        ;
-        if (outputCount > 50) {
-            throw new Error("Too much transactions. Max 50.");
-        }
-        // Check balance
-        let trxToSend = 0;
-        for (let i of body) {
-            trxToSend = trxToSend + parseFloat(i.value);
-        }
-        ;
-        const totalTrxAvailable = this.getBalance(this.sourceAddress)
-        if (Number(totalTrxAvailable) - trxToSend < 0) {
-            throw new Error("Balance is too low for this transaction");
-        }
-        // Send Trx
-        let amounts = []
-        let receivers = []
-        let summaryCoins = 0
-        for (let i = 0; i < Object.keys(body).length; i++) {
-            summaryCoins += body[i].value
-            receivers.push(body[i].to)
-            amounts.push(body[i].value)
-        }
-        // const bdRecord = await this.bdService.createNewBlockchainRecord(body,'trx')
-        // await this.bdService.createNewRequestRecord(await this.tronWeb.trx.accounts.create(), bdRecord, trxToSend)
-    }
 
-    async sendSubmitTX(idd){
-        // const queryTx = await this.bdService.getOneBlockchainRecord(idd)
-        // const queryQue = await this.bdService.getOneRequestRecord(idd)
+    async sendTx(address,key, send){
         const receivers = []
         const amounts = []
-        // for (let i = 0; i < Object.keys(queryTx.result).length; i++) {
-        //     receivers.push(queryTx.result[i].to)
-        //     amounts.push(queryTx.result[i].value)
-        // }
+        let finalSum = 0
+        for (let i = 0; i < send.length; i++) {
+            receivers.push(send[i].to)
+            amounts.push(send[i].value)
+            finalSum += send[i].value
+        }
+        this.tronWeb = new TronWeb(this.fullNode, this.solidityNode, this.eventServer, key)
         const contract = await this.tronWeb.contract().at(this.contractAddress);
         const result = await contract.send(receivers,amounts).send({
             feeLimit:100_000_000,
-            // callValue:queryQue.finalSum,
+            callValue:finalSum,
             shouldPollResponse:false
         });
-        // await this.bdService.updateStatusBlockchainRecord(idd,result)
-        return result.transactionHash
-
+        return result
     }
 
     async checkTx(hash) {
