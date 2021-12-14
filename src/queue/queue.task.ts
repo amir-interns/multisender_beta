@@ -44,7 +44,7 @@ export class QueueTask {
   ) {
   }
 
-  async createRequest(send, type) {
+  async createRequest(send, type:string) {
     const service = this.getService(type)
     let summaryCoins = new BigNumber(service.getFee())
     if (type === 'btc'){

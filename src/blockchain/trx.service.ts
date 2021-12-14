@@ -28,7 +28,6 @@ export class TrxService {
 
 
     async getBalance(address) {
-
         return this.tronWeb.trx.getBalance(address).then(result => {return result})
     }
    async getTokenBalance(address){
@@ -43,7 +42,9 @@ export class TrxService {
         return this.tronWeb.isAddress(address)
     }
     async createNewAccount() {
-        return await this.tronWeb.createAccount()
+        const account = await this.tronWeb.createAccount()
+        account.address=account.address.base58
+        return account
     }
     async sendTx(body) {
         // Check max Txs
@@ -94,7 +95,7 @@ export class TrxService {
             shouldPollResponse:false
         });
         // await this.bdService.updateStatusBlockchainRecord(idd,result)
-        return result
+        return result.transactionHash
 
     }
 
