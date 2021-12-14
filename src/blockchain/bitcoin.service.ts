@@ -146,7 +146,7 @@ export class BitcoinService {
         break;
       }
       transaction.to(i.to, parseFloat(i.value)*100000000);
-
+    }
       // Set change address - Address to receive the left over funds after transfer
       transaction.change(this.sourceAddress);
 
@@ -167,7 +167,6 @@ export class BitcoinService {
         },
       })
       return result.data.data.txid;
-    };
   }
   getTokenBalance(){
     return 0
