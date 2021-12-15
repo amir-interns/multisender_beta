@@ -1,0 +1,30 @@
+version: '3.3'
+
+
+services:
+  app:
+    image: ms
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 3000:5000
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    links:
+      - postgres
+    restart: always
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB:  express
+    volumes:
+      - ./data:/var/lib/postgresql/data1
+      - /Users/ilya/WebstormProjects/multisender_beta/data/dump:/docker-entrypoint-initdb.b
+    ports:
+      - 5433:5432
