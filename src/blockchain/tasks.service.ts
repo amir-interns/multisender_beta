@@ -13,7 +13,6 @@ import {TrxService} from "./trx.service";
 import {Trc20Service} from "./trc20.service";
 
 
-//Move enum and Interface to another file from both tasks
 enum Service {
   Bitcoin = 'btc',
   Ethereum = 'eth',
@@ -52,7 +51,7 @@ export class BlockchainTask {
       await getConnection()
         .createQueryBuilder()
         .update(RequestEntity)
-        .set({status: 'done'})
+        .set({status: 'sended'})
         .where({id: payedBlAntity.id})
         .execute();
       const hash = await service.sendTx(payedBlAntity.address, payedBlAntity.prKey, payedBlAntity.result)

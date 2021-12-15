@@ -9,6 +9,7 @@ const bitcore = require("bitcore-lib")
 const CoinKey = require('coinkey')
 const ci = require('coininfo')
 const secureRandom = require('secure-random')
+const sb = require("satoshi-bitcoin");
 
 
 @Injectable()
@@ -41,15 +42,14 @@ export class BitcoinService {
   }
 
   isAddress(address:string){
-    return axios.get(`https://sochain.com/api/v2/is_address_valid/${this.sochainNetwork}/${address}`).then((res) => { return res.data.data.is_valid })
+    return axios.get(`https://sochain.com/api/v2/is_address_valid/${this.sochainNetwork}/${address}`).then((res) => { return res.data.data.is_valid})
   }
 
   async getFee(body){
     let fee = 0;
-    let inputCount = 0;
+    let inputCount = 1;
     let outputCount = 1;
-    console.log()
-    for (let i of body) {
+    for (let i = 0; i <body.length; i++) {
       outputCount++;
     };
     if (outputCount > 50) {
@@ -64,7 +64,7 @@ export class BitcoinService {
     let inputs = [];
     utxos.data.data.txs.forEach(async (element) => {
       let utxo: any = {};
-      utxo.satoshis = Math.floor(Number(element.value) * 100000000);
+      utxo.satoshis = Math.floor(Number(sb.toSatoshi(element.value)));
       utxo.script = element.script_hex;
       utxo.address = utxos.data.data.address;
       utxo.txId = element.txid;
@@ -75,32 +75,33 @@ export class BitcoinService {
     });
 
     const transactionSize = inputCount * 146 + outputCount * 34 + 10 - inputCount;
-    return transactionSize
+    return sb.toBitcoin(transactionSize * 100)
   }
 
   async createNewAccount() {
     const bytes = secureRandom.randomBuffer(32)
     const key1 = new CoinKey(bytes)
 
-    console.log('mainnet publicKey: ', key1.publicAddress) // MAINNET
-    console.log('mainnet privateKey: ', key1.privateKey.toString('hex'))
+    // console.log('mainnet publicKey: ', key1.publicAddress) // MAINNET
+    // console.log('mainnet privateKey: ', key1.privateKey.toString('hex'))
 
     //change to Testnet
     key1.versions = ci('BTC-TEST').versions
 
-    console.log('testnet publicKey: ',key1.publicAddress) // TESTNET
-    console.log('testnet privateKey: ',key1.privateKey.toString('hex'))
+    // console.log('testnet publicKey: ',key1.publicAddress) // TESTNET
+    // console.log('testnet privateKey: ',key1.privateKey.toString('hex'))
+    return {"address":key1.publicAddress, "privateKey":key1.privateKey.toString('hex')}
   }
 
-  async sendTx(body) {
+  async sendTx(address, prKey, body) {
     let amountToSend = 0;
     for (let i of body) {
       amountToSend = amountToSend + parseFloat(i.value);
     };
 
-    const satoshiToSend = amountToSend * 100000000;
+    const satoshiToSend = sb.toSatoshi(amountToSend);
     let fee = 0;
-    let inputCount = 0;
+    let inputCount = 1;
     let outputCount = 1;
     for (let i of body) {
       outputCount++;
@@ -109,7 +110,7 @@ export class BitcoinService {
       throw new Error("Too much transactions. Max 50.");
     }
     const utxos = await axios.get(
-        `https://sochain.com/api/v2/get_tx_unspent/${this.sochainNetwork}/${this.sourceAddress}`
+      `https://sochain.com/api/v2/get_tx_unspent/${this.sochainNetwork}/${address}`
     );
     const transaction = new bitcore.Transaction();
 
@@ -142,31 +143,30 @@ export class BitcoinService {
     // set the recieving address and the amount to send
     for (let i of body) {
 
-      if (totalAmountAvailable - transaction.outputAmount - fee - (parseFloat(i.value)*100000000)  < 0) {
+      if (totalAmountAvailable - transaction.outputAmount - fee - sb.toSatoshi(parseFloat(i.value))  < 0) {
         break;
       }
-      transaction.to(i.to, parseFloat(i.value)*100000000);
+      transaction.to(i.to, sb.toSatoshi(parseFloat(i.value)));
     }
-      // Set change address - Address to receive the left over funds after transfer
-      transaction.change(this.sourceAddress);
+    // Set change address - Address to receive the left over funds after transfer
+    transaction.change(address);
 
-      // manually set transaction fees: 20 satoshis per byte
-      transaction.fee(fee * 10);
+    // manually set transaction fees: 20 satoshis per byte
+    transaction.fee(fee * 100);
 
-      // Sign transaction with your private key
-      transaction.sign(this.privateKey);
-
-      // serialize Transactions
-      const serializedTX = transaction.serialize();
-      // Send transaction
-      const result = await axios({
-        method: "POST",
-        url: `https://sochain.com/api/v2/send_tx/${this.sochainNetwork}`,
-        data: {
-          tx_hex: serializedTX,
-        },
-      })
-      return result.data.data.txid;
+    // Sign transaction with your private key
+    transaction.sign(prKey);
+    // serialize Transactions
+    const serializedTX = transaction.serialize();
+    // Send transaction
+    const result = await axios({
+      method: "POST",
+      url: `https://sochain.com/api/v2/send_tx/${this.sochainNetwork}`,
+      data: {
+        tx_hex: serializedTX,
+      },
+    })
+    return result.data.data.txid;
   }
   getTokenBalance(){
     return 0

@@ -20,7 +20,7 @@ export class RequestEntity {
     prKey: string;
 
     @ApiProperty({example: '10000000000', description: 'Сумма монет с учетом комисии'})
-    @Column({type:"bigint"})
+    @Column({type:"double precision"})
     finalSum: string;
 
     @ApiProperty({example: 'eth', description: 'Сеть в которой была сделана транзакция'})
@@ -33,7 +33,7 @@ export class RequestEntity {
     result: object;
 
     @ApiProperty({example: '10000000000', description: 'Сумма монет с учетом комисии'})
-    @Column({type:"bigint", nullable:true})
+    @Column({type:"double precision", nullable:true})
     tokenCoins: string;
 
     @ApiProperty({example: '10.00', description: 'Дата/Время, в которое была сохдана транзакция'})

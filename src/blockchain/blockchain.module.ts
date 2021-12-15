@@ -23,39 +23,7 @@ import {BlockchainRepository} from "./customBlRep";
         ConfigModule.forFeature(BitcoinConfig), ConfigModule.forFeature(TokenConfig),
         ConfigModule.forFeature(EthereumConfig)],
     providers: [ BitcoinService, EthereumService, UsdtService, BlockchainTask, TrxService, Trc20Service,Object,
-        BlockchainEntity, Repository, BlockchainRepository,
-
-        // {
-        //     provide:'btc', useFactory: (btcSevice:BitcoinService, blockchainRepository: Repository<BlockchainEntity>)=>{
-        //         return new BlockchainTask(btcSevice)
-        //     },
-        //     inject: [BitcoinService]
-        // },
-        // {
-        //     provide:'eth', useFactory: async (ethService:EthereumService,  blockchainRepository:BlockchainRepository)=>{
-        //         return new BlockchainTask(ethService, blockchainRepository.rep)
-        //     },
-        //     inject: [EthereumService,BlockchainRepository]
-        // },
-        // {
-        //     provide:'usdt', useFactory: (usdtService:UsdtService,blockchainRepository: Repository<BlockchainEntity>)=>{
-        //         return new BlockchainTask(usdtService)
-        //     },
-        //     inject: [UsdtService]
-        // },
-        // {
-        //     provide:'trx', useFactory: (trxService:TrxService,blockchainRepository: Repository<BlockchainEntity>)=>{
-        //         return new BlockchainTask(trxService)
-        //     },
-        //     inject: [TrxService]
-        // },
-        // {
-        //     provide:'trc20', useFactory: (trc20Service:Trc20Service,blockchainRepository: Repository<BlockchainEntity>)=>{
-        //         return new BlockchainTask(trc20Service)
-        //     },
-        //     inject: [Trc20Service]
-        // },
-    ],
+        BlockchainEntity, Repository, BlockchainRepository],
     exports:[EthereumService, BitcoinService, UsdtService, Trc20Service,TrxService,]
 })
 export class BlockchainModule {

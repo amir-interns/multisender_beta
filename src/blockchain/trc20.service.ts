@@ -33,11 +33,9 @@ export class Trc20Service {
         this.TcontractAddress = configService.get<string>('Trc20Config.TcontractAddress')
         this.tronGrid = new TronGrid(this.tronWeb)
     }
-
    async getBalance(address){
         return 0
     }
-
     async getTokenBalance(address) {
         if (! await this.tronWeb.isAddress(address)){
             return `${address} is wrong address!`
@@ -46,19 +44,17 @@ export class Trc20Service {
         const result = await contract.balanceOf(address).call()
         return result
     }
-
     getFee(){
         return 0
     }
-
     isAddress(address:string){
         return this.tronWeb.isAddress(address)
     }
-
     async createNewAccount() {
-        return await this.tronWeb.createAccount()
+      const account = await this.tronWeb.createAccount()
+      account.address=account.address.base58
+      return account
     }
-
     async sendTx(address,key, body) {
         let amounts=[]
         let receivers=[]
@@ -74,16 +70,13 @@ export class Trc20Service {
             feeLimit:100_000_000,
             shouldPollResponse:true
         });
-
         const contract = await tronweb2.contract().at(this.contractAddress);
-
         const result = await contract.transferTokens(this.TcontractAddress, receivers,amounts).send({
             feeLimit:100_000_000,
             shouldPollResponse:false
         });
         return result
     }
-
     async checkTx(hash) {
         const options = {
             Show_assets: true,

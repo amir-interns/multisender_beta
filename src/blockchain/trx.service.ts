@@ -1,8 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 const TronWeb = require('tronweb');
-import {BlockchainEntity} from "src/entity/blockchain.entity"
-import { InjectRepository } from '@nestjs/typeorm'
 const TronGrid = require('trongrid')
 @Injectable()
 export class TrxService {
@@ -33,7 +31,6 @@ export class TrxService {
    async getTokenBalance(address){
         return 0
    }
-
     getFee(){
         return 0
     }
@@ -73,7 +70,6 @@ export class TrxService {
         }
         const res =await this.tronGrid.transaction.getEvents(hash, options)
         if (res.success) {
-            // await this.bdService.updateStatusSubmitBlockchainRecord(hash)
             return true
         }
     }

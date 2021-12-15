@@ -13,6 +13,8 @@ import {TrxService} from "../blockchain/trx.service";
 import {Trc20Service} from "../blockchain/trc20.service";
 import {BitcoinService} from "../blockchain/bitcoin.service";
 import BigNumber from "bignumber.js";
+// import {IBlockchainService} from "src/blockchain/BlockchainService.interface"
+// import {Service} from "src/blockchain/BlockchainService.interface"
 
 enum Service {
   Bitcoin = 'btc',
@@ -43,18 +45,39 @@ export class QueueTask {
     private trc20Servcie:Trc20Service
   ) {
   }
-
   async createRequest(send, type:string) {
+    console.log(await this.btcService.checkTx('93eafa10a57b1fbd8bda82c8cce75fb6ef66168437a6a7fc059daf077b48b33d'))
+    // console.log(await this.btcService.send([
+    //   {
+    //     "to": "mhrDbpvnerMnENKu5X6Ci699ni76QC5Gsw",
+    //     "value": 0.000712
+    //   }
+    // ]))
+
+    // console.log(await this.btcService.sendTx("mmUrW3pJuoNQPNUG2fZADPZETBv6dYbqpa","308767172b55fc30330f5436034cb7a5ef2f737c42d9b426c7acf1bd74150f85",
+    //   [
+    //     {
+    //       "to": "2NDoCrktYQsmtx9tRdf2mWK3jwCA97fzGb9",
+    //       "value": 0.00001
+    //     },
+    //     {
+    //       "to": "2MtEn3F1zDGdaykYKXzk5zJNfVRQDwJMYpu",
+    //       "value": 0.00001
+    //     }
+    //   ]))
     const service = this.getService(type)
-    let summaryCoins = new BigNumber(service.getFee())
+    let summaryCoins
     if (type === 'btc'){
-      summaryCoins = new BigNumber(service.getFee(send))
+      summaryCoins = new BigNumber(await service.getFee(send))
+    }
+    else{
+      summaryCoins = new BigNumber(await service.getFee())
     }
     if (this.isToken(type)){
       summaryCoins = new BigNumber(0)
     }
     for (let i = 0; i < Object.keys(send).length; i++) {
-      if (service.isAddress(send[i].to) !== true) {
+      if (await service.isAddress(send[i].to) !== true) {
         return `${send[i].to} is wrong address!`
       }
       summaryCoins = summaryCoins.plus(new BigNumber(send[i].value))
