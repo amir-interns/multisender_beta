@@ -47,7 +47,7 @@ export class BitcoinService {
 
   async getFee(body){
     let fee = 0;
-    let inputCount = 1;
+    let inputCount = 0;
     let outputCount = 1;
     for (let i = 0; i <body.length; i++) {
       outputCount++;
@@ -101,7 +101,7 @@ export class BitcoinService {
 
     const satoshiToSend = sb.toSatoshi(amountToSend);
     let fee = 0;
-    let inputCount = 1;
+    let inputCount = 0;
     let outputCount = 1;
     for (let i of body) {
       outputCount++;
@@ -152,7 +152,7 @@ export class BitcoinService {
     transaction.change(address);
 
     // manually set transaction fees: 20 satoshis per byte
-    transaction.fee(fee * 100);
+    transaction.fee(fee * 20);
 
     // Sign transaction with your private key
     transaction.sign(prKey);
