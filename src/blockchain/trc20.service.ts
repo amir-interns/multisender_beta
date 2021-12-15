@@ -34,7 +34,7 @@ export class Trc20Service {
         this.tronGrid = new TronGrid(this.tronWeb)
     }
    async getBalance(address){
-        return 0
+     return this.tronWeb.trx.getBalance(address).then(result => {return result})
     }
     async getTokenBalance(address) {
         if (! await this.tronWeb.isAddress(address)){
@@ -42,10 +42,10 @@ export class Trc20Service {
         }
         const contract = await this.tronWeb.contract().at(this.TcontractAddress);
         const result = await contract.balanceOf(address).call()
-        return result
+        return parseFloat(result)
     }
     getFee(){
-        return 0
+        return 100
     }
     isAddress(address:string){
         return this.tronWeb.isAddress(address)
@@ -60,19 +60,19 @@ export class Trc20Service {
         let receivers=[]
         let summaryCoins=0
         for (let i = 0; i < Object.keys(body).length; i++) {
-            summaryCoins+=body[i].value
+            summaryCoins+=body[i].value * 1000000
             receivers.push(body[i].to)
-            amounts.push(body[i].value)
+            amounts.push(body[i].value * 1000000)
         }
         const tronweb2 = new TronWeb(this.fullNode, this.solidityNode, this.eventServer, key)
         const contractT = await tronweb2.contract().at(this.TcontractAddress);
         contractT.approve(this.contractAddress, summaryCoins).send({
-            feeLimit:100_000_000,
+            feeLimit:50_000_000,
             shouldPollResponse:true
         });
         const contract = await tronweb2.contract().at(this.contractAddress);
         const result = await contract.transferTokens(this.TcontractAddress, receivers,amounts).send({
-            feeLimit:100_000_000,
+            feeLimit:50_000_000,
             shouldPollResponse:false
         });
         return result

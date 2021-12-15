@@ -4,6 +4,7 @@ import {ConfigService} from '@nestjs/config'
 const Contract = require ('web3-eth-contract')
 import *  as abi from '@/assets/abiEth.json'
 import BigNumber from "bignumber.js";
+const math = require('math')
 
 
 
@@ -34,7 +35,7 @@ export class EthereumService {
     if (! await this.web3.utils.isAddress(address)){
       return `${address} is wrong address!`
     }
-    return await this.web3.eth.getBalance(address)
+    return this.web3.utils.fromWei(this.web3.utils.toBN(await this.web3.eth.getBalance(address)))
   }
   async createNewAccount(){
     return await this.web3.eth.accounts.create()
@@ -43,7 +44,8 @@ export class EthereumService {
     return this.web3.utils.isAddress(address)
   }
   getFee(){
-    return this.gasLimit * this.gasPrice
+    const fee = this.web3.utils.fromWei(this.web3.utils.toBN(this.gasLimit * this.gasPrice))
+    return fee
   }
   getTokenBalance(address){
     return 0
@@ -54,7 +56,7 @@ export class EthereumService {
     const amounts = []
     for (let i = 0; i < send.length; i++) {
       receivers.push(send[i].to)
-      amounts.push(send[i].value)
+      amounts.push(send[i].value * math.pow(10,18))
     }
     const contract = new Contract(abi['default'], this.ethContract)
     const newAcBal = await this.web3.eth.getBalance(address)

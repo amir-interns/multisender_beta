@@ -8,6 +8,7 @@ import *  as abiT from '@/assets/abiMSTokens.json'
 import *  as abi from '@/assets/abicontract.json'
 const Web3 = require('web3')
 const BigNumber = require('bignumber.js')
+const math = require('math')
 
 
 @Injectable()
@@ -43,7 +44,7 @@ export class UsdtService {
       return `${address} is wrong address!`
     }
     const contract = new this.web3.eth.Contract(abi['default'], this.addrContract)
-    return await contract.methods.balanceOf(address).call()
+    return this.web3.utils.fromWei(this.web3.utils.toBN(await contract.methods.balanceOf(address).call()))
   }
   async getBalance(address: string) {
     if (!this.web3.utils.isAddress(address)) {
@@ -58,7 +59,8 @@ export class UsdtService {
     return this.web3.utils.isAddress(address)
   }
   getFee(){
-    return 2*this.gasLimit * this.gasPrice
+    const fee = this.web3.utils.fromWei(this.web3.utils.toBN(this.gasLimit * this.gasPrice))
+    return 2 * fee
   }
   async sendTx(address, prKey, send){
     const receivers = []
@@ -66,8 +68,8 @@ export class UsdtService {
     let sum = 0
     for (let i = 0; i < send.length; i++) {
       receivers.push(send[i].to)
-      amounts.push(send[i].value)
-      sum += send[i].value
+      amounts.push(send[i].value * math.pow(10,18))
+      sum += send[i].value * math.pow(10,18)
     }
     const newAcBal = await this.getBalance(address)
     const val = newAcBal - (this.gasLimit * this.gasPrice)
@@ -80,7 +82,6 @@ export class UsdtService {
       data: await contractT.methods.approve(this.MSAddrContr, sum).encodeABI()
     };
     const signedTxT = await this.web3.eth.accounts.signTransaction(txT, prKey)
-    console.log(await this.web3.eth.sendSignedTransaction(signedTxT.rawTransaction))
     const contract = new Contract(abiT['default'], this.MSAddrContr)
     const tx = {
       gasPrice: this.gasPrice,
@@ -92,7 +93,6 @@ export class UsdtService {
 
     const signedTx = await this.web3.eth.accounts.signTransaction(tx, prKey)
     const result = await this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-    console.log(result)
     return result.transactionHash
   }
   async checkTx(hash) {

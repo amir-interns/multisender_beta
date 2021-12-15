@@ -1,12 +1,10 @@
 import { Injectable} from "@nestjs/common";
-import { CronJob } from "cron";
-import {Cron, SchedulerRegistry} from "@nestjs/schedule";
+import {Cron, CronExpression} from "@nestjs/schedule";
 import {InjectRepository} from "@nestjs/typeorm";
 import {BlockchainEntity} from "../entity/blockchain.entity";
 import {Connection, getConnection, getRepository, Repository} from "typeorm";
 import {RequestEntity} from "../entity/request.entity";
 import {EthereumService} from "./ethereum.service";
-import {BlockchainRepository} from "./customBlRep";
 import {UsdtService} from "./usdt.service";
 import {BitcoinService} from "./bitcoin.service";
 import {TrxService} from "./trx.service";
@@ -43,7 +41,7 @@ export class BlockchainTask {
               private trc20Servcie:Trc20Service)
   { }
 
-  @Cron('* * * * * *')
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async searchPayedRequest() {
     try {
       const payedBlAntity = await getRepository(RequestEntity).findOne({where: {status: 'payed'}})
