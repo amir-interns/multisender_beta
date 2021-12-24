@@ -7,20 +7,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import  database  from 'config/database.config'
 import BitcoinConfig from 'config/bitcoin.config'
-import { BlockchainEntity } from './entity/blockchain.entity'; 
-import { AuthEntity } from 'src/entity/auth.entity';
+import { BlockchainEntity } from './entities/blockchain.entity';
+import { AuthEntity } from 'src/entities/auth.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import EthereumConfig from 'config/ether.config'
 import TokenConfig from 'config/ether.config'
 import { LoggerMiddleware } from 'src/utils/logger.middleware';
 import TrxConfig from 'config/trx'
 import Trc20Config from 'config/trc20';
-import {RequestEntity} from "src/entity/request.entity";
-import {QueueModule} from "./queue/queue.module";
+import {RequestEntity} from "src/entities/request.entity";
+import {RequestModule} from "./request/request.module";
+import {Subscriber} from "./entities/subscriber";
+import {EventEmitterModule} from "@nestjs/event-emitter";
 
 @Module({
   imports: [ConfigModule.forRoot({ load: [database, BitcoinConfig, EthereumConfig, TokenConfig, TrxConfig, Trc20Config], envFilePath: '.development.env' }),
-
             TypeOrmModule.forRootAsync({
               imports: [ConfigModule],
               useFactory: (configService: ConfigService) => ({
@@ -36,7 +37,7 @@ import {QueueModule} from "./queue/queue.module";
               inject: [ConfigService],
             }),
             ScheduleModule.forRoot(),
-            AuthModule,BlockchainModule, QueueModule
+            AuthModule,BlockchainModule, RequestModule
             ],
 
   controllers: [AppController],

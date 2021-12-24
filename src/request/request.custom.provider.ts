@@ -1,7 +1,7 @@
 
 import {EntityRepository, Repository} from "typeorm";
 import {InjectRepository} from "@nestjs/typeorm";
-import {RequestEntity} from "../entity/request.entity";
+import {RequestEntity} from "../entities/request.entity";
 
 
 @EntityRepository(RequestEntity)

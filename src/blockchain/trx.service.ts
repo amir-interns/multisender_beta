@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import {Account, Send} from "./blockchainService.interface";
 const TronWeb = require('tronweb');
 const TronGrid = require('trongrid')
 @Injectable()
@@ -25,52 +26,54 @@ export class TrxService {
     }
 
 
-    async getBalance(address) {
-        return this.tronWeb.trx.getBalance(address).then(result => {return result})
+    async getBalance(address:string):Promise<string> {
+      if (!this.isAddress(address)){
+        throw new Error(`${address} is wrong address!`)
+      }
+      return this.tronWeb.trx.getBalance(address).then(result => {return result})
     }
-   async getTokenBalance(address){
-        return 0
+   async getTokenBalance(address:string):Promise<string>{
+      return '0'
    }
-    getFee(){
-        return 0
+    getFee():number{
+      return 0
+    }
+    isAddress(address:string):boolean{
+      return this.tronWeb.isAddress(address)
+    }
+    async createNewAccount():Promise<Account> {
+      const ac = await this.tronWeb.createAccount()
+      let account: Account
+      account = {address:ac.address.base58,privateKey:ac.privateKey.toString('hex')}
+      return account
     }
 
-    isAddress(address:string){
-        return this.tronWeb.isAddress(address)
+    async sendTx(address:string,key:string, send:Array<Send>):Promise<string>{
+      const receivers = []
+      const amounts = []
+      let finalSum = 0
+      for (let i = 0; i < send.length; i++) {
+        receivers.push(send[i].to)
+        amounts.push(send[i].value)
+        finalSum += send[i].value
+      }
+      this.tronWeb = new TronWeb(this.fullNode, this.solidityNode, this.eventServer, key)
+      const contract = await this.tronWeb.contract().at(this.contractAddress);
+      const result = await contract.send(receivers,amounts).send({
+        feeLimit:100_000_000,
+        callValue:finalSum,
+        shouldPollResponse:false
+      });
+      return result
     }
-    async createNewAccount() {
-        const account = await this.tronWeb.createAccount()
-        account.address=account.address.base58
-        return account
-    }
-
-    async sendTx(address,key, send){
-        const receivers = []
-        const amounts = []
-        let finalSum = 0
-        for (let i = 0; i < send.length; i++) {
-            receivers.push(send[i].to)
-            amounts.push(send[i].value)
-            finalSum += send[i].value
-        }
-        this.tronWeb = new TronWeb(this.fullNode, this.solidityNode, this.eventServer, key)
-        const contract = await this.tronWeb.contract().at(this.contractAddress);
-        const result = await contract.send(receivers,amounts).send({
-            feeLimit:100_000_000,
-            callValue:finalSum,
-            shouldPollResponse:false
-        });
-        return result
-    }
-
-    async checkTx(hash) {
-        const options = {
-            Show_assets: true,
-            only_confirmed: true,
-        }
-        const res =await this.tronGrid.transaction.getEvents(hash, options)
-        if (res.success) {
-            return true
-        }
+    async checkTx(hash:string):Promise<boolean>{
+      const options = {
+        Show_assets: true,
+        only_confirmed: true,
+      }
+      const res =await this.tronGrid.transaction.getEvents(hash, options)
+      if (res.success) {
+        return true
+      }
     }
 }

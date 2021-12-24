@@ -1,11 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn} from 'typeorm';
+import {RequestEntity} from "./request.entity";
+
 
 @Entity()
 export class BlockchainEntity {
   @ApiProperty({example: '1', description: 'Уникальный идентификатор'})
   @PrimaryGeneratedColumn('increment')
   id: number;
+
+  @ApiProperty({example: '1', description: 'Уникальный идентификатор заявки'})
+  @OneToOne(() => RequestEntity, {eager: true})
+  @JoinColumn()
+  Request: RequestEntity;
 
   @ApiProperty({example: 'ksdgjh14h21uh3412i3dli21hdilhi123', description: 'Хэш транзакции'})
   @Column({nullable: true})
@@ -24,9 +31,7 @@ export class BlockchainEntity {
   @Column()
   typeCoin: string;
 
-
   @ApiProperty({example: '10.00', description: 'Время в которое была сделана транзакция'})
   @Column()
   date: Date;
-
 }

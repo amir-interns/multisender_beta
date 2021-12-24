@@ -1,27 +1,27 @@
-import {Controller, Param, Body, Inject, Post, UseGuards, } from '@nestjs/common'
+import {Controller,  Body, Post, UseGuards, } from '@nestjs/common'
 import {JwtAuthGuard} from "src/auth/jwt-auth.guard";
-import {QueueTask} from "../queue/queue.task";
+import {RequestTask} from "src/request/request.task";
 import {InjectRepository} from "@nestjs/typeorm";
-import {BlockchainEntity} from "../entity/blockchain.entity";
+import {BlockchainEntity} from "src/entities/blockchain.entity";
 import {Repository} from "typeorm";
 
 
-interface IRequestTask{
-  createRequest(send:object, type:string):any;
-}
-
-
-@Controller('blockchain')
+@Controller('request')
 export class RequestController {
   constructor(
-    private task:QueueTask,
+    private task:RequestTask,
     @InjectRepository(BlockchainEntity)
     private blockchainRepository:Repository<BlockchainEntity>
   ) {}
-  //@UseGuards(JwtAuthGuard)
-  @Post('sendTx')
+  @UseGuards(JwtAuthGuard)
+  @Post('createRequest')
   async sendBlockchainTx(@Body() params: any):Promise<any>{
     return this.task.createRequest(params.send, params.type)
+  }
+  @UseGuards(JwtAuthGuard)
+  @Post('deleteRequest')
+  async deleteRequest(@Body() id: number):Promise<any>{
+    return this.task.deleteRequest(id)
   }
   @Post('findAll')
   async findAll() {

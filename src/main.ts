@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from 'src/app.module';
-import {QueueTask} from "src/queue/queue.task";
+import {RequestTask} from "src/request/request.task";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 

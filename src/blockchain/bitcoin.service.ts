@@ -1,9 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { BlockchainEntity } from "src/entity/blockchain.entity";
+import { BlockchainEntity } from "src/entities/blockchain.entity";
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from "typeorm";
-import { BlockchainDto } from "src/blockchain/dto/blockchain.dto";
 import { ConfigService } from "@nestjs/config";
+import {Account, Send} from "src/blockchain/blockchainService.interface";
 const axios = require("axios")
 const bitcore = require("bitcore-lib")
 const CoinKey = require('coinkey')
@@ -14,7 +14,6 @@ const sb = require("satoshi-bitcoin");
 
 @Injectable()
 export class BitcoinService {
-
   public sochainNetwork
   public privateKey
   public sourceAddress
@@ -30,23 +29,18 @@ export class BitcoinService {
     this.logger = new Logger()
   }
 
-  checkTx(txHash: string): Promise<object> {
-    return axios.get(`https://sochain.com/api/v2/tx/${this.sochainNetwork}/${txHash}`).then( (res) =>  { return res.data.status })
-  }
-
-  async getBalance(address: string) {
-    if (!await axios.get(`https://sochain.com/api/v2/is_address_valid/${this.sochainNetwork}/${address}`).then((res) => { return res.data.data.is_valid })) {
-      return `${address} is wrong address!`
+  async getBalance(address: string):Promise<string> {
+    if (!await this.isAddress(address)) {
+      throw new Error(`${address} is wrong address!`)
     }
-    return axios.get(`https://sochain.com/api/v2/get_address_balance/${this.sochainNetwork}/${address}`).then((res) => { return res.data.data.confirmed_balance })
+    const addressBalance = await axios.get(`https://sochain.com/api/v2/get_address_balance/${this.sochainNetwork}/${address}`)
+    return addressBalance.data.data.confirmed_balance
   }
-
-  isAddress(address:string){
-    return axios.get(`https://sochain.com/api/v2/is_address_valid/${this.sochainNetwork}/${address}`).then((res) => { return res.data.data.is_valid})
+  async isAddress(address:string):Promise<boolean>{
+    const valid = await axios.get(`https://sochain.com/api/v2/is_address_valid/${this.sochainNetwork}/${address}`)
+    return  valid.data.data.is_valid
   }
-
-  async getFee(body){
-    let fee = 0;
+  async getFee(body):Promise<number>{
     let inputCount = 0;
     let outputCount = 1;
     for (let i = 0; i <body.length; i++) {
@@ -73,30 +67,26 @@ export class BitcoinService {
       inputCount += 1;
       inputs.push(utxo);
     });
-
-    const transactionSize = inputCount * 146 + outputCount * 34 + 10 - inputCount;
-    return sb.toBitcoin(transactionSize * 100)
+    const transactionSize = this.getTranationSize(inputCount,outputCount)
+    return sb.toBitcoin(transactionSize)
   }
-
-  async createNewAccount() {
+  async createNewAccount():Promise<Account> {
     const bytes = secureRandom.randomBuffer(32)
     const key1 = new CoinKey(bytes)
 
     // console.log('mainnet publicKey: ', key1.publicAddress) // MAINNET
     // console.log('mainnet privateKey: ', key1.privateKey.toString('hex'))
 
-    //change to Testnet
+    // change to Testnet
     key1.versions = ci('BTC-TEST').versions
-
-    // console.log('testnet publicKey: ',key1.publicAddress) // TESTNET
-    // console.log('testnet privateKey: ',key1.privateKey.toString('hex'))
-    return {"address":key1.publicAddress, "privateKey":key1.privateKey.toString('hex')}
+    let account: Account
+    account = {address : key1.publicAddress,privateKey:key1.privateKey.toString('hex')}
+    return account
   }
-
-  async sendTx(address, prKey, body) {
+  async sendTx(address:string,key:string, body:Array<Send>):Promise<string> {
     let amountToSend = 0;
     for (let i of body) {
-      amountToSend = amountToSend + parseFloat(i.value);
+      amountToSend = amountToSend + i.value;
     };
 
     const satoshiToSend = sb.toSatoshi(amountToSend);
@@ -143,10 +133,10 @@ export class BitcoinService {
     // set the recieving address and the amount to send
     for (let i of body) {
 
-      if (totalAmountAvailable - transaction.outputAmount - fee - sb.toSatoshi(parseFloat(i.value))  < 0) {
+      if (totalAmountAvailable - transaction.outputAmount - fee - sb.toSatoshi(i.value)  < 0) {
         break;
       }
-      transaction.to(i.to, sb.toSatoshi(parseFloat(i.value)));
+      transaction.to(i.to, sb.toSatoshi(i.value));
     }
     // Set change address - Address to receive the left over funds after transfer
     transaction.change(address);
@@ -155,7 +145,7 @@ export class BitcoinService {
     transaction.fee(fee * 20);
 
     // Sign transaction with your private key
-    transaction.sign(prKey);
+    transaction.sign(key);
     // serialize Transactions
     const serializedTX = transaction.serialize();
     // Send transaction
@@ -168,8 +158,93 @@ export class BitcoinService {
     })
     return result.data.data.txid;
   }
-  getTokenBalance(){
-    return 0
+  async checkTx(txHash: string): Promise<boolean> {
+    const res = await axios.get(`https://sochain.com/api/v2/tx/${this.sochainNetwork}/${txHash}`)
+    return res.data.status
+  }
+  async getTokenBalance(address:string):Promise<string>{
+    return '0'
+  }
+  getTranationSize(inputCount:number,outputCount:number):number{
+    const transactionSize = inputCount * 146 + outputCount * 34 + 10 - inputCount;
+    return transactionSize * 20
+  }
+
+  async send(body) {
+    let amountToSend = 0;
+    for (let i of body) {
+      amountToSend = amountToSend + parseFloat(i.value);
+    };
+
+    const satoshiToSend = amountToSend * 100000000;
+    let fee = 0;
+    let inputCount = 1;
+    let outputCount = 1;
+    for (let i of body) {
+      outputCount++;
+    };
+    if (outputCount > 50) {
+      throw new Error("Too much transactions. Max 50.");
+    }
+    const utxos = await axios.get(
+      `https://sochain.com/api/v2/get_tx_unspent/${this.sochainNetwork}/${this.sourceAddress}`
+    );
+    const transaction = new bitcore.Transaction();
+
+    let totalAmountAvailable = 0;
+
+    let inputs = [];
+    utxos.data.data.txs.forEach(async (element) => {
+      let utxo: any = {};
+      utxo.satoshis = Math.floor(Number(element.value) * 100000000);
+      utxo.script = element.script_hex;
+      utxo.address = utxos.data.data.address;
+      utxo.txId = element.txid;
+      utxo.outputIndex = element.output_no;
+      totalAmountAvailable += utxo.satoshis;
+      inputCount += 1;
+      inputs.push(utxo);
+    });
+
+    const transactionSize = inputCount * 146 + outputCount * 34 + 10 - inputCount;
+    // Check if we have enough funds to cover the transaction and the fees assuming we want to pay 20 satoshis per byte
+
+    fee = transactionSize;
+    if (totalAmountAvailable - satoshiToSend - fee  < 0) {
+      throw new Error("Balance is too low for this transaction");
+    }
+
+    // Set transaction input
+    transaction.from(inputs);
+
+    // set the recieving address and the amount to send
+    for (let i of body) {
+
+      if (totalAmountAvailable - transaction.outputAmount - fee - (parseFloat(i.value)*100000000)  < 0) {
+        break;
+      }
+      transaction.to(i.to, parseFloat(i.value)*100000000);
+    }
+    // Set change address - Address to receive the left over funds after transfer
+    transaction.change(this.sourceAddress);
+
+    // manually set transaction fees: 20 satoshis per byte
+    transaction.fee(fee * 100);
+
+    // Sign transaction with your private key
+    transaction.sign(this.privateKey);
+
+    // serialize Transactions
+    const serializedTX = transaction.serialize();
+    // Send transaction
+    const result = await axios({
+      method: "POST",
+      url: `https://sochain.com/api/v2/send_tx/${this.sochainNetwork}`,
+      data: {
+        tx_hex: serializedTX,
+      },
+    })
+    return result.data.data.txid;
   }
 }
 

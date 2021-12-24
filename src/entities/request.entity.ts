@@ -1,8 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, Repository, AfterUpdate, UpdateEvent} from 'typeorm';
+import {InjectRepository} from "@nestjs/typeorm";
+import {BlockchainEntity} from "./blockchain.entity";
+
 
 @Entity()
 export class RequestEntity {
+
     @ApiProperty({example: '1', description: 'Уникальный идентификатор'})
     @PrimaryGeneratedColumn('increment')
     id: number;

@@ -3,6 +3,7 @@ const Web3 = require ('web3')
 import {ConfigService} from '@nestjs/config'
 const Contract = require ('web3-eth-contract')
 import *  as abi from '@/assets/abiEth.json'
+import {Account, Send} from "src/blockchain/blockchainService.interface";
 import BigNumber from "bignumber.js";
 const math = require('math')
 
@@ -31,32 +32,36 @@ export class EthereumService {
     this.web3 = new Web3(this.ws)
   }
 
-  async getBalance(address:string){
-    if (! await this.web3.utils.isAddress(address)){
-      return `${address} is wrong address!`
+  async getBalance(address:string):Promise<string>{
+    if (!this.isAddress(address)){
+      throw new Error(`${address} is wrong address!`)
     }
     return this.web3.utils.fromWei(this.web3.utils.toBN(await this.web3.eth.getBalance(address)))
   }
-  async createNewAccount(){
-    return await this.web3.eth.accounts.create()
-  }
-  isAddress(address:string){
+  isAddress(address:string):boolean{
     return this.web3.utils.isAddress(address)
   }
-  getFee(){
+  getFee():number{
     const fee = this.web3.utils.fromWei(this.web3.utils.toBN(this.gasLimit * this.gasPrice))
     return fee
   }
-  getTokenBalance(address){
-    return 0
+  async createNewAccount():Promise<Account>{
+    const ac = await this.web3.eth.accounts.create()
+    let account: Account
+    account = {address:ac.address,privateKey:ac.privateKey.toString('hex')}
+    return account
+  }
+  async getTokenBalance(address:string):Promise<string>{
+    return '0'
   }
 
-  async sendTx(address,key, send){
+  async sendTx(address:string,key:string, send:Array<Send>):Promise<string>{
     const receivers = []
     const amounts = []
+    const ten = new BigNumber(10)
     for (let i = 0; i < send.length; i++) {
       receivers.push(send[i].to)
-      amounts.push(send[i].value * math.pow(10,18))
+      amounts.push((new BigNumber(send[i].value).multipliedBy(ten.exponentiatedBy(18))).toString())
     }
     const contract = new Contract(abi['default'], this.ethContract)
     const newAcBal = await this.web3.eth.getBalance(address)
@@ -76,7 +81,7 @@ export class EthereumService {
     return result.transactionHash
   }
 
-  async checkTx(hash) {
+  async checkTx(hash:string):Promise<boolean> {
     const transRes = await this.web3.eth.getTransactionReceipt(hash)
     if (await this.web3.eth.getBlockNumber() - transRes.blockNumber >= 3) {
       return true
