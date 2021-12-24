@@ -20,8 +20,8 @@ export class RequestController {
   }
   @UseGuards(JwtAuthGuard)
   @Post('deleteRequest')
-  async deleteRequest(@Body() id: number):Promise<any>{
-    return this.task.deleteRequest(id)
+  async deleteRequest(@Body() param: any):Promise<any>{
+    return this.task.deleteRequest(param.id)
   }
   @Post('findAll')
   async findAll() {

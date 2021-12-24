@@ -28,7 +28,6 @@ export class RequestTask {
   ) {
   }
   async createRequest(send, type:string) {
-    // console.log(await this.btcService.send([{"to":"mmPhyTQoG9EBzmAfECdMYrcNdPRdwty9Ey", "value":0.0001004}]))
     const service = this.getService(type)
     let summaryCoins = new BigNumber(0)
     for (let i = 0; i < Object.keys(send).length; i++) {
