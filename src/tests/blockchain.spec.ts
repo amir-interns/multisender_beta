@@ -5,7 +5,7 @@ import {BlockchainController} from "../blockchain/blockchain.controller";
 import {EthereumService} from "../blockchain/ethereum.service";
 import {BitcoinService} from "../blockchain/bitcoin.service";
 import {UsdtService} from "../blockchain/usdt.service";
-import {BlockchainEntity} from "../entity/blockchain.entity";
+import {BlockchainEntity} from "../entities/blockchain.entity";
 import {ConfigModule} from "@nestjs/config";
 import {BlockchainTask} from "../blockchain/tasks.service";
 import {TrxService} from "../blockchain/trx.service";

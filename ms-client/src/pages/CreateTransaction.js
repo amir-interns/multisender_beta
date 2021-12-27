@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { useHttp } from '../hooks/http.hook';
+import { useMessage } from '../hooks/message.hook';
 
 export const CreateTransaction = () => {
   const [value, setValue] = useState();
-  const {request} = useHttp()
+  const [selectValue, setSelectValue] = useState();
+  const { request, error, clearError } = useHttp()
+  const message = useMessage()
 
   const handleOnSubmit = async (event) => {
-    const type = event.target.select.value
+    try {
+    const type = selectValue
     const data = value
+    if (!(data && type))
+      throw new Error("Неверные данные")
     const addresses = data.match(/\w{32,}\b/ug)
     const values = data.match(/\b[\d.]{1,}\b/ug)
     let tmp = { to: "", value: "" }
@@ -17,8 +23,17 @@ export const CreateTransaction = () => {
       tmp.value = values[i]
       send.push(tmp)
     }
-    const fetched = await request('/blockchain/sendTx', 'POST', {type, send})
+    const fetched = await request('/request/createRequest', 'POST', {send, type})
+    message(fetched.message)
+    } catch(e) {
+      window.M.toast({html: e})
+    }  
   }
+
+  useEffect(() => {
+    message(error)
+    clearError()
+  }, [error, message, clearError])
 
   useEffect(() => {
     window.M.AutoInit();
@@ -28,11 +43,15 @@ export const CreateTransaction = () => {
     setValue(event.target.value)
   }
 
+  const handleOnSelectChange = (event) => {
+    setSelectValue(event.target.value)
+  }
+
   return (
     <div>
-      <form className="col s12" onSubmit={(event) => handleOnSubmit(event)}>
+      <div className="col s12">
         <div className="input-field col s12">
-          <select name="select">
+          <select name="select" onChange={event => handleOnSelectChange(event)}>
             <option value="" disabled selected>Выберите валюту</option>
             <option value="btc">Bitcoin</option>
             <option value="eth">Ethereum</option>
@@ -52,10 +71,10 @@ export const CreateTransaction = () => {
             </div>
           </form>
         </div>
-      <button className="btn waves-effect waves-light deep-purple lighten-1" type="submit" name="action">Send
+      <button className="btn waves-effect waves-light deep-purple lighten-1" onClick={(event) => handleOnSubmit(event)} >Send
       <i className="material-icons right">send</i>
       </button>
-      </form>
+      </div>
       
     </div>
   );

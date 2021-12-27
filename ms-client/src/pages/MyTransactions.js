@@ -7,7 +7,7 @@ export const MyTransactions = () => {
   const { request } = useHttp()
 
   const fetchTransactions = useCallback(async () => {
-      const fetched = await request('/blockchain/findAll', 'GET', null)
+      const fetched = await request('/request/findAll', 'POST', null)
       setTransaction(fetched)
   })
 

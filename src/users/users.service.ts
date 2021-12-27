@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Repository} from "typeorm";
-import { AuthEntity } from 'src/entity/auth.entity';
+import { AuthEntity } from 'src/entities/auth.entity';
 import {InjectRepository} from "@nestjs/typeorm";
 
 export type User = any;

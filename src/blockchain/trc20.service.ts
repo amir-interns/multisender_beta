@@ -2,8 +2,10 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 const TronWeb = require('tronweb');
 import {getConnection, Repository} from 'typeorm'
-import {BlockchainEntity} from "src/entity/blockchain.entity"
+import {BlockchainEntity} from "src/entities/blockchain.entity"
 import { InjectRepository } from '@nestjs/typeorm'
+import {Account, Send} from "./blockchainService.interface";
+import BigNumber from "bignumber.js";
 const TronGrid = require('trongrid')
 
 
@@ -33,67 +35,67 @@ export class Trc20Service {
         this.TcontractAddress = configService.get<string>('Trc20Config.TcontractAddress')
         this.tronGrid = new TronGrid(this.tronWeb)
     }
-
-
-    async getBalance(address) {
-        const contract = await this.tronWeb.contract().at(this.TcontractAddress);
-
-        const result = await contract.balanceOf(address).call()
-        return result
+   async getBalance(address:string):Promise<string>{
+     if (!this.isAddress(address)){
+       throw new Error(`${address} is wrong address!`)
+     }
+     const ten = new BigNumber(10)
+     const balance = new BigNumber(await this.tronWeb.trx.getBalance(address))
+     const bal = (balance.dividedBy(ten.exponentiatedBy(6))).toString()
+     return bal
     }
-
-    async sendTx(body) {
-        // Send Trx
-        let amounts=[]
-        let receivers=[]
-        let summaryCoins=0
-        for (let i = 0; i < Object.keys(body).length; i++) {
-            summaryCoins+=body[i].value
-            receivers.push(body[i].to)
-            amounts.push(body[i].value)
-        }
-        const blockchainEntity = new BlockchainEntity()
-        blockchainEntity.date = new Date()
-        blockchainEntity.status = 'new'
-        blockchainEntity.typeCoin = 'trc20'
-        blockchainEntity.result = body
-        const bdRecord = await this.blockchainRepository.save(blockchainEntity)
-
-        const contractT = await this.tronWeb.contract().at(this.TcontractAddress);
-        contractT.approve(this.contractAddress, summaryCoins).send({
-            feeLimit:100_000_000,
-            shouldPollResponse:true
-        });
-
-        const contract = await this.tronWeb.contract().at(this.contractAddress);
-
-        const result = await contract.transferTokens(this.TcontractAddress, receivers,amounts).send({
-            feeLimit:100_000_000,
-            shouldPollResponse:false
-        });
-        await getConnection()
-            .createQueryBuilder()
-            .update(BlockchainEntity)
-            .set({ status:'submitted', txHash:result, result:body, date:new Date()})
-            .where({id:bdRecord.id})
-            .execute();
-        return result
-    }
-
-    async checkTx(hash) {
-        const options = {
-            Show_assets: true,
-            only_confirmed: true,
-        }
-        const res =await this.tronGrid.transaction.getEvents(hash, options)
-        if (res.success) {
-            await getConnection()
-              .createQueryBuilder()
-              .update(BlockchainEntity)
-              .set({status: 'confirmed', date: new Date()})
-              .where({txHash: hash})
-              .execute();
-            return true
-        }
-      }
+   async getTokenBalance(address:string):Promise<string>{
+     if (!this.isAddress(address)){
+       throw new Error(`${address} is wrong address!`)
+     }
+     const ten = new BigNumber(10)
+     const contract = await this.tronWeb.contract().at(this.TcontractAddress);
+     const result = new BigNumber(String(await contract.balanceOf(address).call()))
+     const bal = (result.dividedBy(ten.exponentiatedBy(6))).toString()
+     return bal
+   }
+   getFee():number{
+     return 40
+   }
+   isAddress(address:string):boolean{
+     return this.tronWeb.isAddress(address)
+   }
+   async createNewAccount():Promise<Account> {
+     const ac = await this.tronWeb.createAccount()
+     let account: Account
+     account = {address:ac.address.base58,privateKey:ac.privateKey.toString('hex')}
+     return account
+   }
+   async sendTx(address:string,key:string, body:Array<Send>):Promise<string>{
+     const amounts = []
+     const receivers = []
+     let summaryCoins = 0
+     for (let i = 0; i < Object.keys(body).length; i++) {
+       summaryCoins += body[i].value * 1000000
+       receivers.push(body[i].to)
+       amounts.push(body[i].value * 1000000)
+     }
+     const tronweb2 = new TronWeb(this.fullNode, this.solidityNode, this.eventServer, key)
+     const contractT = await tronweb2.contract().at(this.TcontractAddress);
+     contractT.approve(this.contractAddress, summaryCoins).send({
+       feeLimit:20_000_000,
+       shouldPollResponse:true
+     });
+     const contract = await tronweb2.contract().at(this.contractAddress);
+     const result = await contract.transferTokens(this.TcontractAddress, receivers,amounts).send({
+       feeLimit:20_000_000,
+       shouldPollResponse:false
+     });
+     return result
+   }
+   async checkTx(hash:string):Promise<boolean>  {
+     const options = {
+       Show_assets: true,
+       only_confirmed: true,
+     }
+     const res = await this.tronGrid.transaction.getEvents(hash, options)
+     if (res.success) {
+       return true
+     }
+   }
 }

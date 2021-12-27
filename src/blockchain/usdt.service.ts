@@ -1,13 +1,15 @@
 import { Injectable} from '@nestjs/common'
-import {getConnection, Repository} from "typeorm"
-import {BlockchainEntity} from "src/entity/blockchain.entity"
+import {Repository} from "typeorm"
+import {BlockchainEntity} from "src/entities/blockchain.entity"
 import {InjectRepository} from "@nestjs/typeorm"
 import {ConfigService} from "@nestjs/config"
 const Contract = require('web3-eth-contract')
 import *  as abiT from '@/assets/abiMSTokens.json'
 import *  as abi from '@/assets/abicontract.json'
+import {Account, Send} from "./blockchainService.interface";
 const Web3 = require('web3')
 const BigNumber = require('bignumber.js')
+const math = require('math')
 
 
 @Injectable()
@@ -25,7 +27,8 @@ export class UsdtService {
   constructor(
     @InjectRepository(BlockchainEntity)
     private blockchainRepository:Repository<BlockchainEntity>,
-    private tokenConfig:ConfigService) {
+    private tokenConfig:ConfigService,
+    ) {
     this.webSocketInfura = tokenConfig.get<string>('TokenConfig.tokenWebSocketInfura')
     this.gasPrice = tokenConfig.get<number>('EthereumConfig.gasPrice')
     this.gasLimit = tokenConfig.get<number>('TokenConfig.tokenGasLimit')
@@ -37,74 +40,72 @@ export class UsdtService {
     this.web3 = new Web3(this.webSocketInfura)
   }
 
-  async getBalance(address: string) {
-    if (!this.web3.utils.isAddress(address)) {
-      return `${address} is wrong address!`
+  async getTokenBalance(address: string):Promise<string> {
+    if (!this.isAddress(address)) {
+      throw new Error(`${address} is wrong address!`)
     }
     const contract = new this.web3.eth.Contract(abi['default'], this.addrContract)
-    return parseInt(await contract.methods.balanceOf(address).call(), 10)
+    return this.web3.utils.fromWei(this.web3.utils.toBN(await contract.methods.balanceOf(address).call()))
   }
-
-  async sendTx(send: object) {
-    const amounts = []
-    const receivers = []
-    let summaryCoins = BigNumber(0)
-    for (let i = 0; i < Object.keys(send).length; i++) {
-      if (this.web3.utils.isAddress(send[i].to) !== true) {
-        return `${send[i].to} is wrong address!`
-      }
-      summaryCoins = BigNumber.sum(summaryCoins, send[i].value)
-      receivers.push(send[i].to)
-      amounts.push(send[i].value)
-
+  async getBalance(address: string):Promise<string> {
+    if (!this.isAddress(address)) {
+      throw new Error(`${address} is wrong address!`)
     }
-    const blockchainEntity = new BlockchainEntity()
-    blockchainEntity.date = new Date()
-    blockchainEntity.status = 'new'
-    blockchainEntity.typeCoin = 'usdt'
-    blockchainEntity.result = send
-    const bdRecord = await this.blockchainRepository.save(blockchainEntity)
-
+    return this.web3.eth.getBalance(address)
+  }
+  isAddress(address:string):boolean{
+    return this.web3.utils.isAddress(address)
+  }
+  getFee():number{
+    const fee = this.web3.utils.fromWei(this.web3.utils.toBN(this.gasLimit * this.gasPrice))
+    return 2 * fee
+  }
+  async createNewAccount():Promise<Account>{
+    const ac = await this.web3.eth.accounts.create()
+    let account: Account
+    account = {address:ac.address,privateKey:ac.privateKey.toString('hex')}
+    return account
+  }
+  async sendTx(address:string,key:string, send:Array<Send>):Promise<string>{
+    const receivers = []
+    const amounts = []
+    let sum = 0
+    for (let i = 0; i < send.length; i++) {
+      receivers.push(send[i].to)
+      amounts.push(send[i].value * math.pow(10,18))
+      sum += send[i].value * math.pow(10,18)
+    }
+    const newAcBal = await this.web3.eth.getBalance(address)
+    const val = newAcBal - (this.gasLimit * this.gasPrice)
     const contractT = new Contract(abi['default'], this.addrContract)
     const txT = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
       to: this.addrContract,
-      from: this.addrSender,
-      data: await contractT.methods.approve(this.MSAddrContr, summaryCoins).encodeABI()
+      from: address,
+      data: contractT.methods.approve(this.MSAddrContr, sum).encodeABI()
     };
-    const signedTxT = await this.web3.eth.accounts.signTransaction(txT, this.privateKey)
+    const signedTxT = await this.web3.eth.accounts.signTransaction(txT, key)
     await this.web3.eth.sendSignedTransaction(signedTxT.rawTransaction)
-
     const contract = new Contract(abiT['default'], this.MSAddrContr)
     const tx = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,
       to: this.MSAddrContr,
-      from: this.addrSender,
-      data: await contract.methods.transferTokens(this.addrContract, receivers, amounts).encodeABI()
+      from: address,
+      data: contract.methods.transferTokens(this.addrContract, receivers, amounts).encodeABI()
     };
 
-    const signedTx = await this.web3.eth.accounts.signTransaction(tx, this.privateKey)
+    const signedTx = await this.web3.eth.accounts.signTransaction(tx, key)
     const result = await this.web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-    await getConnection()
-      .createQueryBuilder()
-      .update(BlockchainEntity)
-      .set({status: 'submitted', txHash: result.transactionHash, result: send, date: new Date()})
-      .where({id: bdRecord.id})
-      .execute();
     return result.transactionHash
   }
-  async checkTx(hash) {
+  async checkTx(hash):Promise<boolean> {
     const transRes = await this.web3.eth.getTransactionReceipt(hash)
-    if (parseInt(transRes.blockNumber, 10) >= 3) {
-      await getConnection()
-        .createQueryBuilder()
-        .update(BlockchainEntity)
-        .set({status: 'confirmed', date: new Date()})
-        .where({txHash: hash})
-        .execute();
+    if (await this.web3.eth.getBlockNumber() - transRes.blockNumber >= 3) {
+      return true
     }
+    return false
   }
 }
 

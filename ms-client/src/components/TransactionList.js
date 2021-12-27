@@ -20,8 +20,8 @@ export const TransactionList = ({ transaction }) => {
         return (
           <tr key={transaction._id}>
             <td>{index + 1}</td>
-            <td>{transaction.typeCoin}</td>
-            <td>{transaction.txHash}</td>
+            <td>{transaction.finalSum}</td>
+            <td>{transaction.address}</td>
           </tr>
         )
       }) }
