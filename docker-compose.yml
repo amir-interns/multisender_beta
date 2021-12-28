@@ -3,17 +3,32 @@ version: '3.3'
 
 services:
   app:
-    image: ms
+    image: ms11
     build:
       context: .
       dockerfile: ./Dockerfile
     ports:
-      - 3000:5000
+      - 5000:5000
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-    links:
-      - postgres
+    networks:
+      - backend_network
+      - frontend_network
+    restart: always
+
+  client-app:
+    image: ms-client1
+    build:
+      context: ./ms-client
+      dockerfile: ./Dockerfile
+    ports:
+      - 80:3000
+    volumes:
+      - ./ms-client:/usr/src/app/
+      - /usr/src/app/node_modules
+    networks:
+      - frontend_network
     restart: always
 
   postgres:
@@ -22,9 +37,17 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB:  express
+      POSTGRES_DB: express
     volumes:
       - ./data:/var/lib/postgresql/data1
-      - /Users/ilya/WebstormProjects/multisender_beta/data/dump:/docker-entrypoint-initdb.b
+      - /root/multisender_beta/data/dump:/docker-entrypoint-initdb.b
     ports:
       - 5433:5432
+    networks:
+      - backend_network
+
+networks:
+  backend_network:
+    driver: bridge
+  frontend_network:
+    driver: bridge
