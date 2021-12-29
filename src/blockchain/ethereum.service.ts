@@ -64,8 +64,8 @@ export class EthereumService {
       amounts.push((new BigNumber(send[i].value).multipliedBy(ten.exponentiatedBy(18))).toString())
     }
     const contract = new Contract(abi['default'], this.ethContract)
-    const newAcBal = await this.web3.eth.getBalance(address)
-    const val = newAcBal - (this.gasLimit * this.gasPrice)
+    const newAcBal = new BigNumber(await this.web3.eth.getBalance(address))
+    const val = newAcBal.minus(new BigNumber(this.gasLimit * this.gasPrice))
     const rawTr = {
       gasPrice: this.gasPrice,
       gasLimit: this.gasLimit,

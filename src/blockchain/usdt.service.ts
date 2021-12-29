@@ -8,7 +8,7 @@ import *  as abiT from '@/assets/abiMSTokens.json'
 import *  as abi from '@/assets/abicontract.json'
 import {Account, Send} from "./blockchainService.interface";
 const Web3 = require('web3')
-const BigNumber = require('bignumber.js')
+import BigNumber from "bignumber.js";
 const math = require('math')
 
 
@@ -51,7 +51,7 @@ export class UsdtService {
     if (!this.isAddress(address)) {
       throw new Error(`${address} is wrong address!`)
     }
-    return this.web3.eth.getBalance(address)
+    return this.web3.utils.fromWei(this.web3.utils.toBN(await this.web3.eth.getBalance(address)))
   }
   isAddress(address:string):boolean{
     return this.web3.utils.isAddress(address)
@@ -69,14 +69,15 @@ export class UsdtService {
   async sendTx(address:string,key:string, send:Array<Send>):Promise<string>{
     const receivers = []
     const amounts = []
-    let sum = 0
+    const ten = new BigNumber(10)
+    let sum = new BigNumber(0)
     for (let i = 0; i < send.length; i++) {
       receivers.push(send[i].to)
-      amounts.push(send[i].value * math.pow(10,18))
-      sum += send[i].value * math.pow(10,18)
+      amounts.push(new BigNumber(send[i].value).multipliedBy(ten.exponentiatedBy(18))).toString()
+      sum = sum.plus( new BigNumber(send[i].value * math.pow(10,18)))
     }
-    const newAcBal = await this.web3.eth.getBalance(address)
-    const val = newAcBal - (this.gasLimit * this.gasPrice)
+    const newAcBal = new BigNumber(await this.web3.eth.getBalance(address))
+    const val = newAcBal.minus(new BigNumber(this.gasLimit * this.gasPrice))
     const contractT = new Contract(abi['default'], this.addrContract)
     const txT = {
       gasPrice: this.gasPrice,

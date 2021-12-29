@@ -1,8 +1,8 @@
-import { Injectable} from "@nestjs/common";
+import {Injectable, Logger} from "@nestjs/common";
 import {Cron, CronExpression} from "@nestjs/schedule";
 import {InjectRepository} from "@nestjs/typeorm";
 import {BlockchainEntity} from "../entities/blockchain.entity";
-import {Connection, getConnection, getRepository, Repository} from "typeorm";
+import {getConnection, getRepository, Repository} from "typeorm";
 import {EthereumService} from "./ethereum.service";
 import {UsdtService} from "./usdt.service";
 import {BitcoinService} from "./bitcoin.service";
@@ -20,46 +20,57 @@ export class BlockchainTask {
               private usdtService:UsdtService,
               private btcService:BitcoinService,
               private trxService: TrxService,
-              private trc20Servcie:Trc20Service)
+              private trc20Servcie:Trc20Service,
+              private logger:Logger)
   { }
-
   @Cron(CronExpression.EVERY_10_SECONDS)
   async searchNewTransaction() {
+    this.logger.log(`searchNewTransaction`)
     try {
+      this.logger.log(`Before searching new transactions`)
       const payedTx = await this.blockchainRepository.findOne({where: {status: 'new'}})
+      this.logger.log(`${payedTx.id} transaction in process`)
       const service = this.getService(payedTx.typeCoin)
+      this.logger.log(`Before sending ${payedTx.id} transaction`)
       const hash = await service.sendTx(payedTx.Request.address, payedTx.Request.prKey, payedTx.Request.result)
+      this.logger.log(`Transaction with hash ${hash} was submitted, updating Tx's status on submitted `)
       await this.blockchainRepository.update({id:payedTx.id},{
         typeCoin:payedTx.Request.typeCoin, status: 'submitted',
         result: payedTx.Request.result, date: new Date(),
         txHash: hash
       })
+      this.logger.log(`After updating ${payedTx}`)
     }
-    catch{
-      return 0
+    catch (error){
+      this.logger.warn(`No any new transactions or ${error}`)
     }
   }
   @Cron(CronExpression.EVERY_10_SECONDS)
   async confirmateJob() {
+    this.logger.log( `confirmateJob`)
     try {
+      this.logger.log(`Before getting submitted transactions`)
       const bdRecord = await getRepository(BlockchainEntity)
         .createQueryBuilder()
         .where({status: 'submitted'})
         .getMany();
+      this.logger.log(`Found ${bdRecord.length} submitted transactions`)
       for (let i=0; i <= bdRecord.length; i++) {
         const service = this.getService(bdRecord[i].typeCoin)
         if (await service.checkTx(bdRecord[i].txHash)) {
+          this.logger.log(`${bdRecord[i].id} transaction confirmed, updating DB`)
           await getConnection()
             .createQueryBuilder()
             .update(BlockchainEntity)
             .set({status: 'confirmed'})
             .where({id: bdRecord[i].id})
             .execute();
+          this.logger.log(`${bdRecord[i].id} record have been updated`)
         }
       }
     }
-    catch{
-      return 0
+    catch (error){
+      this.logger.warn(`No any submitted transactions or ${error}`)
     }
   }
 

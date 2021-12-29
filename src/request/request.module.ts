@@ -1,4 +1,4 @@
-import { Module} from '@nestjs/common';
+import {Logger, Module} from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {RequestEntity} from "src/entities/request.entity";
 import {RequestTask} from "src/request/request.task";
@@ -15,7 +15,7 @@ import {Subscriber} from "../entities/subscriber";
 @Module({
     imports: [TypeOrmModule.forFeature( [ RequestEntity, BlockchainEntity]),
         ConfigModule.forFeature(EthereumConfig), BlockchainModule],
-    providers: [ RequestTask, Object, Repository, RequestRepository,Subscriber
+    providers: [ RequestTask, Object, Repository, RequestRepository,Subscriber, Logger
     ],
     controllers:[RequestController]
 })
