@@ -10,6 +10,7 @@ export const TransactionList = ({ transaction }) => {
       <thead>
       <tr>
         <th>Заявка №</th>
+        <th>Статус</th>
         <th>Сумма</th>
         <th>Необходимо оплатить по адресу</th>
       </tr>
@@ -20,6 +21,7 @@ export const TransactionList = ({ transaction }) => {
         return (
           <tr key={transaction._id}>
             <td>{index + 1}</td>
+            <td>{transaction.status}</td>
             <td>{transaction.finalSum}</td>
             <td>{transaction.address}</td>
           </tr>
