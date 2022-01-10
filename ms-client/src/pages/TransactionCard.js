@@ -1,13 +1,15 @@
 import React, { useCallback, useState, useEffect } from 'react'
-import { TransactionList } from '../components/TransactionList'
+import { PrintTransaction } from '../components/PrintTransaction'
 import { useHttp } from '../hooks/http.hook'
+import {useParams} from 'react-router-dom'
 
-export const MyTransactions = () => {
+export const TransactionCard = () => {
   const [transaction, setTransaction] = useState([])
   const { request } = useHttp()
+  const linkId = useParams().id
 
   const fetchTransactions = useCallback(async () => {
-      const fetched = await request('/request/findAll', 'POST', null)
+      const fetched = await request(`/request/findOne/${linkId}`, 'POST', null)
       setTransaction(fetched)
   })
 
@@ -16,8 +18,9 @@ export const MyTransactions = () => {
   }, [])
 
   return (
+    
     <>
-    { <TransactionList transaction={ transaction } />}
+    { <PrintTransaction transaction={ transaction } />}
     </>
   )
 }

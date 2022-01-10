@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, } from 'react'
 import { useHttp } from '../hooks/http.hook';
 import { useMessage } from '../hooks/message.hook';
+import { useNavigate } from 'react-router-dom'
 
 export const CreateTransaction = () => {
   const [value, setValue] = useState();
   const [selectValue, setSelectValue] = useState();
   const { request, error, clearError } = useHttp()
   const message = useMessage()
+  const navigate = useNavigate()
 
   const handleOnSubmit = async (event) => {
     try {
@@ -25,6 +27,9 @@ export const CreateTransaction = () => {
     }
     const fetched = await request('/request/createRequest', 'POST', {send, type})
     message(fetched.message)
+    if ( !(fetched.id === null) ) {
+      navigate(`/payCard/${fetched.id}`) 
+    }
     } catch(e) {
       window.M.toast({html: e})
     }  

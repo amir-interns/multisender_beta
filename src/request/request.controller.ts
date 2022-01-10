@@ -1,4 +1,4 @@
-import {Controller,  Body, Post, UseGuards, } from '@nestjs/common'
+import {Controller,  Body, Post, UseGuards, Param} from '@nestjs/common'
 import {JwtAuthGuard} from "src/auth/jwt-auth.guard";
 import {RequestTask} from "src/request/request.task";
 import {InjectRepository} from "@nestjs/typeorm";
@@ -26,6 +26,10 @@ export class RequestController {
   @Post('findAll')
   async findAll() {
     return this.task.findAll()
+  }
+  @Post('findOne/:id')
+  async findOne(@Param('id') id: any) {
+    return this.task.findOne(id)
   }
 }
 
