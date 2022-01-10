@@ -1,4 +1,4 @@
-import { Module} from '@nestjs/common';
+import {Logger, Module} from '@nestjs/common';
 import { BitcoinService } from 'src/blockchain/bitcoin.service';
 import { EthereumService } from 'src/blockchain/ethereum.service';
 import { TypeOrmModule} from '@nestjs/typeorm';
@@ -23,7 +23,7 @@ import { Repository} from "typeorm";
         ConfigModule.forFeature(EthereumConfig), ConfigModule.forFeature(Trc20Config),
     ConfigModule.forFeature(TrxConfig)],
     providers: [ BitcoinService, EthereumService, UsdtService, BlockchainTask, TrxService, Trc20Service,Object,
-        BlockchainEntity, Repository],
+        BlockchainEntity, Repository, Logger],
     exports:[EthereumService, BitcoinService, UsdtService, Trc20Service,TrxService,]
 })
 export class BlockchainModule {
