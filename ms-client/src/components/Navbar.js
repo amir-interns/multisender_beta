@@ -10,7 +10,7 @@ export const Navbar = () => {
         <ul id="nav-mobile" className="right hide-on-med-and-down">
           <li><NavLink to="/makeTx">Создать транзакцию</NavLink></li>
           <li><NavLink to="/listTx">Мои транзакции</NavLink></li>
-          <li><a href="/" >Выйти</a></li>
+          <li><NavLink to="/" >Выйти</NavLink></li>
         </ul>
       </div>
     </nav>

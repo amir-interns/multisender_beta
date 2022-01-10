@@ -42,23 +42,23 @@ export class RequestTask {
     this.logger.log('Created new account')
     if (this.isToken(type)){
       this.logger.log('Before creating new request for sending tokens')
-      await this.requestRepository.save({
+      const result = await this.requestRepository.save({
         status: 'new', finalSum: service.getFee().toString(),
         tokenCoins:summaryCoins.toString(), typeCoin: type, result: send,
         prKey: account.privateKey,
         address: account.address, date: new Date()
       })
       this.logger.log('After creating new request for sending tokens')
-      return { message: "Транзакция ожидает оплаты на странице \"Мои транзакции\"" }
+      return { id: result.id, message: "Транзакция ожидает оплаты на странице \"Мои транзакции\"" }
     }
     this.logger.log('Before creating new request for sending cryptocurrency')
-    await this.requestRepository.save({
+    const result = await this.requestRepository.save({
       status: 'new', finalSum: (summaryCoins.plus(new BigNumber(await service.getFee(send)))).toString(),
       typeCoin: type, result: send, prKey: account.privateKey, tokenCoins:'0',
       address: account.address, date: new Date()
     })
     this.logger.log( 'After creating new request for sending cryptocurrency')
-    return { message: "Транзакция ожидает оплаты на странице \"Мои транзакции\"" }
+    return { id: result.id, message: "Транзакция ожидает оплаты на странице \"Мои транзакции\"" }
   }
   @Cron(CronExpression.EVERY_10_SECONDS)
   async taskPayingSumCheck() {
@@ -151,6 +151,10 @@ export class RequestTask {
     this.logger.log(`Before finding all requests`)
     const txs = await this.requestRepository.find()
     this.logger.log(`Found ${txs.length} requests`)
+    return txs
+  }
+  async findOne(id: string): Promise<RequestEntity> {
+    const txs = await this.requestRepository.findOne(id)
     return txs
   }
 }
