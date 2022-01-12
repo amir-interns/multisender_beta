@@ -18,9 +18,9 @@ export const CreateTransaction = () => {
       throw new Error("Неверные данные")
     const addresses = data.match(/\w{32,}\b/ug)
     const values = data.match(/\b[\d.]{1,}\b/ug)
-    let tmp = { to: "", value: "" }
     let send = []
     for (let i = 0; i < addresses.length; i++) {
+      let tmp = { to: "", value: "" }
       tmp.to = addresses[i]
       tmp.value = values[i]
       send.push(tmp)
