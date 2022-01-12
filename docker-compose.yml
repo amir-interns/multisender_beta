@@ -40,7 +40,7 @@ services:
       POSTGRES_DB: express
     volumes:
       - ./data:/var/lib/postgresql/data1
-      - /root/multisender_beta/data/dump:/docker-entrypoint-initdb.b
+      - ./data/dump:/docker-entrypoint-initdb.b
     ports:
       - 5433:5432
     networks:
