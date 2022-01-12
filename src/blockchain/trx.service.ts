@@ -3,6 +3,8 @@ import { ConfigService } from "@nestjs/config";
 import {Account, Send} from "./blockchainService.interface";
 const TronWeb = require('tronweb');
 const TronGrid = require('trongrid')
+import BigNumber from "bignumber.js";
+
 @Injectable()
 export class TrxService {
     public fullNode
@@ -36,7 +38,7 @@ export class TrxService {
       return '0'
    }
     getFee():number{
-      return 0
+      return 30
     }
     isAddress(address:string):boolean{
       return this.tronWeb.isAddress(address)
@@ -54,13 +56,13 @@ export class TrxService {
       let finalSum = 0
       for (let i = 0; i < send.length; i++) {
         receivers.push(send[i].to)
-        amounts.push(send[i].value)
-        finalSum += send[i].value
+        amounts.push(send[i].value * 1000000)
+        finalSum += (send[i].value * 1000000)
       }
       this.tronWeb = new TronWeb(this.fullNode, this.solidityNode, this.eventServer, key)
       const contract = await this.tronWeb.contract().at(this.contractAddress);
       const result = await contract.send(receivers,amounts).send({
-        feeLimit:100_000_000,
+        feeLimit:30_000_000,
         callValue:finalSum,
         shouldPollResponse:false
       });
