@@ -5,7 +5,7 @@ const Contract = require ('web3-eth-contract')
 import *  as abi from '@/assets/abiEth.json'
 import {Account, Send} from "src/blockchain/blockchainService.interface";
 import BigNumber from "bignumber.js";
-const math = require('math')
+
 
 
 
